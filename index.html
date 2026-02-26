@@ -217,11 +217,25 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="icSafetyDays">安全庫存天數</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="icSafetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
-                            <span class="input-unit">天</span>
+                        <label>安全庫存</label>
+                        <div class="safety-presets" id="icSafetyPresets">
+                            <button type="button" class="safety-btn" data-days="1">
+                                <span class="safety-icon">🟢</span>
+                                <span class="safety-label">一般</span>
+                                <span class="safety-desc">多備 1 天</span>
+                            </button>
+                            <button type="button" class="safety-btn active" data-days="2">
+                                <span class="safety-icon">🟡</span>
+                                <span class="safety-label">保守</span>
+                                <span class="safety-desc">多備 2 天</span>
+                            </button>
+                            <button type="button" class="safety-btn" data-days="3">
+                                <span class="safety-icon">🔴</span>
+                                <span class="safety-label">安全</span>
+                                <span class="safety-desc">多備 3 天</span>
+                            </button>
                         </div>
+                        <input type="hidden" id="icSafetyDays" value="2">
                     </div>
 
                     <button type="submit" class="btn-calculate ic-btn" id="icBtnCalc">

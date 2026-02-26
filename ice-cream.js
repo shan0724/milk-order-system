@@ -18,6 +18,16 @@
         initIceCreamStatus();
         const form = $('#icOrderForm');
         if (form) form.addEventListener('submit', handleIcSubmit);
+
+        // Safety preset buttons
+        const presets = document.querySelectorAll('#icSafetyPresets .safety-btn');
+        presets.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                presets.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                $('#icSafetyDays').value = btn.dataset.days;
+            });
+        });
     });
 
     // ---- Date Helpers ----

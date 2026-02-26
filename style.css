@@ -519,6 +519,59 @@ body {
     margin-bottom: 0;
 }
 
+/* ========== Safety Preset Buttons ========== */
+.safety-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.safety-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 14px 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    color: var(--text-muted);
+}
+
+.safety-btn:hover {
+    border-color: var(--border-light);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+}
+
+.safety-btn.active {
+    border-color: rgba(167, 139, 250, 0.4);
+    background: rgba(167, 139, 250, 0.08);
+    color: var(--text-primary);
+    box-shadow: 0 0 16px rgba(167, 139, 250, 0.12);
+}
+
+.safety-icon {
+    font-size: 1.3rem;
+}
+
+.safety-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.safety-desc {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.safety-btn.active .safety-desc {
+    color: var(--text-secondary);
+}
+
 /* ========== Calculate Button ========== */
 .btn-calculate {
     display: flex;
