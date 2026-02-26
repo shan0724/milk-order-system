@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛奶叫貨系統</title>
+    <meta name="description" content="牛奶用量評估與叫貨建議系統，自動計算建議叫貨量">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-icon">🥛</div>
+            <h1>牛奶叫貨系統</h1>
+            <p class="header-subtitle">智慧評估 · 精準叫貨</p>
+        </header>
+
+        <!-- Status Banner -->
+        <section class="status-banner" id="statusBanner">
+            <div class="status-dot"></div>
+            <span id="statusText">載入中...</span>
+        </section>
+
+        <!-- Cycle info cards -->
+        <section class="cycle-info">
+            <div class="cycle-card">
+                <div class="cycle-label">週期 A</div>
+                <div class="cycle-flow">
+                    <span class="cycle-day order">週一訂</span>
+                    <span class="cycle-arrow">→</span>
+                    <span class="cycle-day deliver">週二到</span>
+                </div>
+                <div class="cycle-cover">涵蓋 週二～週四（3天）</div>
+            </div>
+            <div class="cycle-card">
+                <div class="cycle-label">週期 B</div>
+                <div class="cycle-flow">
+                    <span class="cycle-day order">週三訂</span>
+                    <span class="cycle-arrow">→</span>
+                    <span class="cycle-day deliver">週五到</span>
+                </div>
+                <div class="cycle-cover">涵蓋 週五～週一（3天）</div>
+            </div>
+        </section>
+
+        <!-- Input Form -->
+        <section class="form-section">
+            <h2 class="section-title">📋 輸入用量資訊</h2>
+            <form id="orderForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="currentStock">目前庫存量</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="currentStock" min="0" step="0.1" placeholder="例如：3" required>
+                        <span class="input-unit">箱</span>
+                    </div>
+                    <div class="input-hint">1 箱 = 20 瓶</div>
+                </div>
+                <div class="form-group">
+                    <label for="dailyUsage">每日平均用量</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dailyUsage" min="0.1" step="0.1" placeholder="例如：1" required>
+                        <span class="input-unit">箱/天</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="safetyDays">安全庫存天數</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="safetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
+                        <span class="input-unit">天</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="holidayMultiplier">連續假期用量倍數</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="holidayMultiplier" min="1" max="5" step="0.1" value="1"
+                            placeholder="平日為 1">
+                        <span class="input-unit">倍</span>
+                    </div>
+                    <div class="input-hint">遇連假可設 1.5～2 倍預估用量</div>
+                </div>
+                <button type="submit" class="btn-calculate" id="btnCalc">
+                    <span class="btn-icon">📊</span>
+                    計算建議叫貨量
+                </button>
+            </form>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection" style="display:none;">
+            <h2 class="section-title">📦 叫貨建議</h2>
+
+            <!-- Timeline -->
+            <div class="timeline" id="timeline"></div>
+
+            <!-- Result cards -->
+            <div class="result-cards" id="resultCards"></div>
+
+            <!-- Detail table -->
+            <div class="detail-box" id="detailBox"></div>
+        </section>
+
+        <!-- History -->
+        <section class="history-section" id="historySection" style="display:none;">
+            <h2 class="section-title">📜 最近計算紀錄</h2>
+            <div class="history-list" id="historyList"></div>
+            <button class="btn-clear-history" id="btnClearHistory">清除紀錄</button>
+        </section>
+
+        <footer class="footer">
+            <p>牛奶叫貨系統 v1.0 &middot; 今天是 <span id="todayLabel"></span></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
