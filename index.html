@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>牛奶叫貨系統</title>
-    <meta name="description" content="牛奶用量評估與叫貨建議系統，自動計算建議叫貨量">
+    <title>叫貨系統</title>
+    <meta name="description" content="牛奶與冰淇淋用量評估與叫貨建議系統">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -18,108 +18,226 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-icon">🥛</div>
-            <h1>牛奶叫貨系統</h1>
+            <h1>📦 叫貨系統</h1>
             <p class="header-subtitle">智慧評估 · 精準叫貨</p>
         </header>
 
-        <!-- Status Banner -->
-        <section class="status-banner" id="statusBanner">
-            <div class="status-dot"></div>
-            <span id="statusText">載入中...</span>
-        </section>
+        <!-- Tab Navigation -->
+        <nav class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="milk">🥛 牛奶</button>
+            <button class="tab-btn" data-tab="icecream">🍦 冰淇淋</button>
+        </nav>
 
-        <!-- Cycle info cards -->
-        <section class="cycle-info">
-            <div class="cycle-card">
-                <div class="cycle-label">週期 A</div>
-                <div class="cycle-flow">
-                    <span class="cycle-day order">週一訂</span>
-                    <span class="cycle-arrow">→</span>
-                    <span class="cycle-day deliver">週二到</span>
-                </div>
-                <div class="cycle-cover">涵蓋 週二～週四（3天）</div>
-            </div>
-            <div class="cycle-card">
-                <div class="cycle-label">週期 B</div>
-                <div class="cycle-flow">
-                    <span class="cycle-day order">週三訂</span>
-                    <span class="cycle-arrow">→</span>
-                    <span class="cycle-day deliver">週五到</span>
-                </div>
-                <div class="cycle-cover">涵蓋 週五～週一（3天）</div>
-            </div>
-        </section>
+        <!-- ==================== MILK TAB ==================== -->
+        <div class="tab-content active" id="tab-milk">
+            <section class="status-banner" id="statusBanner">
+                <div class="status-dot"></div>
+                <span id="statusText">載入中...</span>
+            </section>
 
-        <!-- Input Form -->
-        <section class="form-section">
-            <h2 class="section-title">📋 輸入用量資訊</h2>
-            <form id="orderForm" autocomplete="off">
-                <div class="form-group">
-                    <label for="currentStock">目前庫存量</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="currentStock" min="0" step="0.1" placeholder="例如：3" required>
-                        <span class="input-unit">箱</span>
+            <section class="cycle-info">
+                <div class="cycle-card">
+                    <div class="cycle-label">週期 A</div>
+                    <div class="cycle-flow">
+                        <span class="cycle-day order">週一訂</span>
+                        <span class="cycle-arrow">→</span>
+                        <span class="cycle-day deliver">週二到</span>
                     </div>
-                    <div class="input-hint">1 箱 = 20 瓶</div>
+                    <div class="cycle-cover">涵蓋 週二～週四（3天）</div>
                 </div>
-                <div class="form-group">
-                    <label for="dailyUsage">每日平均用量</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="dailyUsage" min="0.1" step="0.1" placeholder="例如：1" required>
-                        <span class="input-unit">箱/天</span>
+                <div class="cycle-card">
+                    <div class="cycle-label">週期 B</div>
+                    <div class="cycle-flow">
+                        <span class="cycle-day order">週三訂</span>
+                        <span class="cycle-arrow">→</span>
+                        <span class="cycle-day deliver">週五到</span>
                     </div>
+                    <div class="cycle-cover">涵蓋 週五～週一（3天）</div>
                 </div>
-                <div class="form-group">
-                    <label for="safetyDays">安全庫存天數</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="safetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
-                        <span class="input-unit">天</span>
+            </section>
+
+            <section class="form-section">
+                <h2 class="section-title">📋 輸入用量資訊</h2>
+                <form id="orderForm" autocomplete="off">
+                    <div class="form-group">
+                        <label for="currentStock">目前庫存量</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="currentStock" min="0" step="0.1" placeholder="例如：3" required>
+                            <span class="input-unit">箱</span>
+                        </div>
+                        <div class="input-hint">1 箱 = 20 瓶</div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="holidayMultiplier">連續假期用量倍數</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="holidayMultiplier" min="1" max="5" step="0.1" value="1"
-                            placeholder="平日為 1">
-                        <span class="input-unit">倍</span>
+                    <div class="form-group">
+                        <label for="dailyUsage">每日平均用量</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="dailyUsage" min="0.1" step="0.1" placeholder="例如：1" required>
+                            <span class="input-unit">箱/天</span>
+                        </div>
                     </div>
-                    <div class="input-hint">遇連假可設 1.5～2 倍預估用量</div>
+                    <div class="form-group">
+                        <label for="safetyDays">安全庫存天數</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="safetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
+                            <span class="input-unit">天</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="holidayMultiplier">連續假期用量倍數</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="holidayMultiplier" min="1" max="5" step="0.1" value="1"
+                                placeholder="平日為 1">
+                            <span class="input-unit">倍</span>
+                        </div>
+                        <div class="input-hint">遇連假可設 1.5～2 倍預估用量</div>
+                    </div>
+                    <button type="submit" class="btn-calculate" id="btnCalc">
+                        <span class="btn-icon">📊</span>
+                        計算建議叫貨量
+                    </button>
+                </form>
+            </section>
+
+            <section class="results-section" id="resultsSection" style="display:none;">
+                <h2 class="section-title">📦 叫貨建議</h2>
+                <div class="timeline" id="timeline"></div>
+                <div class="result-cards" id="resultCards"></div>
+                <div class="detail-box" id="detailBox"></div>
+            </section>
+
+            <section class="history-section" id="historySection" style="display:none;">
+                <h2 class="section-title">📜 最近計算紀錄</h2>
+                <div class="history-list" id="historyList"></div>
+                <button class="btn-clear-history" id="btnClearHistory">清除紀錄</button>
+            </section>
+        </div>
+
+        <!-- ==================== ICE CREAM TAB ==================== -->
+        <div class="tab-content" id="tab-icecream">
+            <section class="status-banner" id="icStatusBanner">
+                <div class="status-dot"></div>
+                <span id="icStatusText">載入中...</span>
+            </section>
+
+            <section class="cycle-info">
+                <div class="cycle-card full-width">
+                    <div class="cycle-label">冰淇淋叫貨週期</div>
+                    <div class="cycle-flow">
+                        <span class="cycle-day order">第1週五訂</span>
+                        <span class="cycle-arrow">→</span>
+                        <span class="cycle-day deliver">兩週後週三到</span>
+                    </div>
+                    <div class="cycle-flow" style="margin-top:8px;">
+                        <span class="cycle-day order">第3週五訂</span>
+                        <span class="cycle-arrow">→</span>
+                        <span class="cycle-day deliver">兩週後週三到</span>
+                    </div>
+                    <div class="cycle-cover" style="margin-top:8px;">每月固定兩次叫貨，週五訂貨後第 12 天（週三）到貨</div>
                 </div>
-                <button type="submit" class="btn-calculate" id="btnCalc">
-                    <span class="btn-icon">📊</span>
-                    計算建議叫貨量
-                </button>
-            </form>
-        </section>
+            </section>
 
-        <!-- Results -->
-        <section class="results-section" id="resultsSection" style="display:none;">
-            <h2 class="section-title">📦 叫貨建議</h2>
+            <section class="form-section">
+                <h2 class="section-title">🍦 輸入冰淇淋庫存與用量</h2>
+                <form id="icOrderForm" autocomplete="off">
+                    <!-- 香草粉 -->
+                    <div class="product-group">
+                        <div class="product-header">
+                            <span class="product-icon">🍨</span>
+                            <span class="product-name">香草粉</span>
+                            <span class="product-spec">1 箱 = 12 包</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="icVanillaStock">目前庫存</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="icVanillaStock" min="0" step="0.1" placeholder="箱"
+                                        required>
+                                    <span class="input-unit">箱</span>
+                                </div>
+                            </div>
+                            <div class="form-group half">
+                                <label for="icVanillaWeekday">平日用量</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="icVanillaWeekday" min="0" step="0.1" placeholder="箱/天"
+                                        required>
+                                    <span class="input-unit">箱/天</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="icVanillaHoliday">假日用量</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="icVanillaHoliday" min="0" step="0.1" placeholder="箱/天"
+                                    required>
+                                <span class="input-unit">箱/天</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Timeline -->
-            <div class="timeline" id="timeline"></div>
+                    <!-- 保久乳 -->
+                    <div class="product-group">
+                        <div class="product-header">
+                            <span class="product-icon">🥛</span>
+                            <span class="product-name">保久乳</span>
+                            <span class="product-spec">1 箱 = 12 罐</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="icMilkStock">目前庫存</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="icMilkStock" min="0" step="0.1" placeholder="箱" required>
+                                    <span class="input-unit">箱</span>
+                                </div>
+                            </div>
+                            <div class="form-group half">
+                                <label for="icMilkWeekday">平日用量</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="icMilkWeekday" min="0" step="0.1" placeholder="箱/天"
+                                        required>
+                                    <span class="input-unit">箱/天</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="icMilkHoliday">假日用量</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="icMilkHoliday" min="0" step="0.1" placeholder="箱/天" required>
+                                <span class="input-unit">箱/天</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Result cards -->
-            <div class="result-cards" id="resultCards"></div>
+                    <!-- 安全庫存 -->
+                    <div class="form-group">
+                        <label for="icSafetyDays">安全庫存天數</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="icSafetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
+                            <span class="input-unit">天</span>
+                        </div>
+                    </div>
 
-            <!-- Detail table -->
-            <div class="detail-box" id="detailBox"></div>
-        </section>
+                    <button type="submit" class="btn-calculate ic-btn" id="icBtnCalc">
+                        <span class="btn-icon">📊</span>
+                        計算建議叫貨量
+                    </button>
+                </form>
+            </section>
 
-        <!-- History -->
-        <section class="history-section" id="historySection" style="display:none;">
-            <h2 class="section-title">📜 最近計算紀錄</h2>
-            <div class="history-list" id="historyList"></div>
-            <button class="btn-clear-history" id="btnClearHistory">清除紀錄</button>
-        </section>
+            <!-- Ice cream results -->
+            <section class="results-section" id="icResultsSection" style="display:none;">
+                <h2 class="section-title">📦 冰淇淋叫貨建議</h2>
+                <div class="ic-schedule-card" id="icScheduleCard"></div>
+                <div class="result-cards" id="icResultCards"></div>
+                <div class="detail-box" id="icDetailBox"></div>
+            </section>
+        </div>
 
         <footer class="footer">
-            <p>牛奶叫貨系統 v1.0 &middot; 今天是 <span id="todayLabel"></span></p>
+            <p>叫貨系統 v2.0 &middot; 今天是 <span id="todayLabel"></span></p>
         </footer>
     </div>
 
     <script src="app.js"></script>
+    <script src="ice-cream.js"></script>
 </body>
 
 </html>
