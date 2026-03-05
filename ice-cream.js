@@ -234,8 +234,8 @@ function renderIcResults(vanilla, milk, cycleInfo, safetyDays) {
             <div class="product-result">
                 <div class="product-result-header">${icon} ${name}</div>
                 <div class="detail-row"><span class="detail-label">目前庫存</span><span class="pr-value">${data.stock} 箱（${data.stock * UNITS_PER_BOX} ${unitName}）</span></div>
-                <div class="detail-row"><span class="detail-label">平日用量</span><span class="pr-value">${weekdayUnits} ${unitName}/天（${data.weekdayUsage} 箱/天）</span></div>
-                <div class="detail-row"><span class="detail-label">假日用量</span><span class="pr-value">${holidayUnits} ${unitName}/天（${data.holidayUsage} 箱/天）</span></div>
+                <div class="detail-row"><span class="detail-label">平日用量</span><span class="pr-value">${weekdayUnits} ${unitName}/天</span></div>
+                <div class="detail-row"><span class="detail-label">假日用量</span><span class="pr-value">${holidayUnits} ${unitName}/天</span></div>
                 <div class="detail-row"><span class="detail-label">涵蓋期間天數</span><span class="pr-value">平日 ${data.coverWeekdays} 天 / 假日 ${data.coverHolidays} 天</span></div>
                 <div class="detail-row"><span class="detail-label">期間總耗量</span><span class="pr-value">${data.totalConsume} 箱</span></div>
                 <div class="detail-row"><span class="detail-label">安全庫存</span><span class="pr-value">${data.safetyStock} 箱（${safetyDays} 天）</span></div>
