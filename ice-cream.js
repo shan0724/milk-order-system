@@ -228,12 +228,14 @@ function renderIcResults(vanilla, milk, cycleInfo, safetyDays) {
     function productDetail(name, icon, unitName, data) {
         const urgClass = data.urgency === 'urgent' ? 'danger' : data.urgency;
         const urgLabel = data.urgency === 'urgent' ? '⚠️ 庫存不足' : data.urgency === 'warn' ? '⚡ 偏低' : '✅ 正常';
+        const weekdayUnits = Math.round(data.weekdayUsage * UNITS_PER_BOX * 10) / 10;
+        const holidayUnits = Math.round(data.holidayUsage * UNITS_PER_BOX * 10) / 10;
         return `
             <div class="product-result">
                 <div class="product-result-header">${icon} ${name}</div>
                 <div class="detail-row"><span class="detail-label">目前庫存</span><span class="pr-value">${data.stock} 箱（${data.stock * UNITS_PER_BOX} ${unitName}）</span></div>
-                <div class="detail-row"><span class="detail-label">平日用量</span><span class="pr-value">${data.weekdayUsage} 箱/天</span></div>
-                <div class="detail-row"><span class="detail-label">假日用量</span><span class="pr-value">${data.holidayUsage} 箱/天</span></div>
+                <div class="detail-row"><span class="detail-label">平日用量</span><span class="pr-value">${weekdayUnits} ${unitName}/天（${data.weekdayUsage} 箱/天）</span></div>
+                <div class="detail-row"><span class="detail-label">假日用量</span><span class="pr-value">${holidayUnits} ${unitName}/天（${data.holidayUsage} 箱/天）</span></div>
                 <div class="detail-row"><span class="detail-label">涵蓋期間天數</span><span class="pr-value">平日 ${data.coverWeekdays} 天 / 假日 ${data.coverHolidays} 天</span></div>
                 <div class="detail-row"><span class="detail-label">期間總耗量</span><span class="pr-value">${data.totalConsume} 箱</span></div>
                 <div class="detail-row"><span class="detail-label">安全庫存</span><span class="pr-value">${data.safetyStock} 箱（${safetyDays} 天）</span></div>
@@ -273,8 +275,8 @@ function loadIcHistory() {
                     data-ms="${e.milkStock}" data-mw="${e.milkWeekday}" data-mh="${e.milkHoliday}"
                     data-safety="${e.safetyDays}" data-mode="${e.mode}">
                     <div>
-                        <span>🍨 香草粉 庫存 ${e.vanillaStock}箱｜平日 ${e.vanillaWeekday}｜假日 ${e.vanillaHoliday}</span><br>
-                        <span>🥛 保久乳 庫存 ${e.milkStock}箱｜平日 ${e.milkWeekday}｜假日 ${e.milkHoliday}</span>
+                        <span>🍨 香草粉 庫存 ${e.vanillaStock}箱｜平日 ${e.vanillaWeekday}包｜假日 ${e.vanillaHoliday}包</span><br>
+                        <span>🥛 保久乳 庫存 ${e.milkStock}箱｜平日 ${e.milkWeekday}罐｜假日 ${e.milkHoliday}罐</span>
                     </div>
                     <div>
                         <span class="hi-result">共 ${e.totalBoxes} 箱（${modeLabel}）</span>
@@ -340,14 +342,20 @@ function handleIcSubmit(e) {
     e.preventDefault();
 
     const vanillaStock = parseFloat($('#icVanillaStock').value);
-    const vanillaWeekday = parseFloat($('#icVanillaWeekday').value);
-    const vanillaHoliday = parseFloat($('#icVanillaHoliday').value);
+    // 輸入單位：包/天 → 換算成箱/天（÷12）
+    const vanillaWeekdayPkg = parseFloat($('#icVanillaWeekday').value);
+    const vanillaHolidayPkg = parseFloat($('#icVanillaHoliday').value);
+    const vanillaWeekday = vanillaWeekdayPkg / UNITS_PER_BOX;
+    const vanillaHoliday = vanillaHolidayPkg / UNITS_PER_BOX;
     const milkStock = parseFloat($('#icMilkStock').value);
-    const milkWeekday = parseFloat($('#icMilkWeekday').value);
-    const milkHoliday = parseFloat($('#icMilkHoliday').value);
+    // 輸入單位：罐/天 → 換算成箱/天（÷12）
+    const milkWeekdayCan = parseFloat($('#icMilkWeekday').value);
+    const milkHolidayCan = parseFloat($('#icMilkHoliday').value);
+    const milkWeekday = milkWeekdayCan / UNITS_PER_BOX;
+    const milkHoliday = milkHolidayCan / UNITS_PER_BOX;
     const safetyDays = parseFloat($('#icSafetyDays').value) || 1;
 
-    if ([vanillaStock, vanillaWeekday, vanillaHoliday, milkStock, milkWeekday, milkHoliday].some(v => isNaN(v) || v < 0)) {
+    if ([vanillaStock, vanillaWeekdayPkg, vanillaHolidayPkg, milkStock, milkWeekdayCan, milkHolidayCan].some(v => isNaN(v) || v < 0)) {
         alert('請輸入有效的庫存與用量！');
         return;
     }
@@ -379,8 +387,12 @@ function handleIcSubmit(e) {
     const days = ['日', '一', '二', '三', '四', '五', '六'];
     const dateStr = `${now.getMonth() + 1}/${now.getDate()} 週${days[now.getDay()]}`;
     saveIcHistory({
-        vanillaStock, vanillaWeekday, vanillaHoliday,
-        milkStock, milkWeekday, milkHoliday,
+        vanillaStock,
+        vanillaWeekday: vanillaWeekdayPkg,   // 存包
+        vanillaHoliday: vanillaHolidayPkg,
+        milkStock,
+        milkWeekday: milkWeekdayCan,          // 存罐
+        milkHoliday: milkHolidayCan,
         safetyDays, mode,
         totalBoxes: vanillaResult.recommendedQty + milkResult.recommendedQty,
         date: dateStr,
