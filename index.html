@@ -12,6 +12,75 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Coverage mode selector */
+        .coverage-mode-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .coverage-mode-btn {
+            flex: 1;
+            padding: 14px 10px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .coverage-mode-btn .mode-icon {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .coverage-mode-btn .mode-title {
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.9rem;
+            display: block;
+        }
+
+        .coverage-mode-btn .mode-desc {
+            font-size: 0.75rem;
+            opacity: 0.65;
+            display: block;
+        }
+
+        .coverage-mode-btn.active {
+            border-color: #3b9eff;
+            background: rgba(59, 158, 255, 0.15);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(59, 158, 255, 0.25);
+        }
+
+        .coverage-mode-btn.active .mode-title {
+            color: #7dc8ff;
+        }
+
+        .coverage-mode-btn:hover:not(.active) {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .form-label-row label {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -150,6 +219,26 @@
             <section class="form-section ic-form">
                 <h2 class="section-title">🍦 輸入冰淇淋庫存與用量</h2>
                 <form id="icOrderForm" autocomplete="off">
+
+                    <!-- ★ 涵蓋模式選擇 ★ -->
+                    <div class="form-group">
+                        <label>📅 叫貨涵蓋模式</label>
+                        <div class="coverage-mode-group" id="icCoverageModes">
+                            <button type="button" class="coverage-mode-btn" data-mode="one-cycle" id="modeOneCycle">
+                                <span class="mode-icon">🔁</span>
+                                <span class="mode-title">兩週到貨</span>
+                                <span class="mode-desc">叫一個週期量<br>（約 14 天）</span>
+                            </button>
+                            <button type="button" class="coverage-mode-btn active" data-mode="two-cycle"
+                                id="modeTwoCycle">
+                                <span class="mode-icon">📦</span>
+                                <span class="mode-title">整月備貨</span>
+                                <span class="mode-desc">一次叫足兩個週期<br>（約 40 天）</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="icCoverageMode" value="two-cycle">
+                    </div>
+
                     <div class="product-group">
                         <div class="product-header">
                             <span class="product-icon">🍨</span>
@@ -251,6 +340,12 @@
                 <div class="result-cards" id="icResultCards"></div>
                 <div class="detail-box" id="icDetailBox"></div>
             </section>
+
+            <section class="history-section" id="icHistorySection" style="display:none;">
+                <h2 class="section-title">📜 上次叫貨紀錄</h2>
+                <div class="history-list" id="icHistoryList"></div>
+                <button class="btn-clear-history" id="icBtnClearHistory">清除紀錄</button>
+            </section>
         </div>
 
         <footer class="footer">
@@ -258,8 +353,8 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
-    <script src="ice-cream.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="ice-cream.js"></script>
 </body>
 
 </html>
