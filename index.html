@@ -148,11 +148,20 @@
                         </div>
                         <div class="input-hint">1 箱 = 20 瓶</div>
                     </div>
-                    <div class="form-group">
-                        <label for="dailyUsage">每日平均用量</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="dailyUsage" min="0.1" step="0.1" placeholder="例如：1" required>
-                            <span class="input-unit">箱/天</span>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="weekdayUsage">平日用量</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="weekdayUsage" min="0.1" step="0.1" placeholder="例如：1" required>
+                                <span class="input-unit">箱/天</span>
+                            </div>
+                        </div>
+                        <div class="form-group half">
+                            <label for="holidayUsage">假日用量</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="holidayUsage" min="0" step="0.1" placeholder="例如：1.5" required>
+                                <span class="input-unit">箱/天</span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -161,15 +170,6 @@
                             <input type="number" id="safetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
                             <span class="input-unit">天</span>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="holidayMultiplier">連續假期用量倍數</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="holidayMultiplier" min="1" max="5" step="0.1" value="1"
-                                placeholder="平日為 1">
-                            <span class="input-unit">倍</span>
-                        </div>
-                        <div class="input-hint">遇連假可設 1.5～2 倍預估用量</div>
                     </div>
                     <button type="submit" class="btn-calculate" id="btnCalc">
                         <span class="btn-icon">📊</span>

@@ -1,6 +1,7 @@
 /**
  * 牛奶叫貨系統 – 核心邏輯 (ES Module + Firebase)
  * 單位：箱（1 箱 = 20 瓶）
+ * 用量：分平日（週一～週五）/ 假日（週六、週日）
  */
 
 import { db, ref, push, onValue, remove, get, query, orderByChild, limitToLast }
@@ -14,8 +15,8 @@ const BOTTLES_PER_BOX = 20;
 const MILK_DB_PATH = 'milk_history';
 
 const CYCLES = [
-    { orderDay: 1, deliverDay: 2, coverDays: 3 },
-    { orderDay: 3, deliverDay: 5, coverDays: 3 },
+    { orderDay: 1, deliverDay: 2, coverDays: 3 },  // 週一訂 → 週二到
+    { orderDay: 3, deliverDay: 5, coverDays: 3 },  // 週三訂 → 週五到
 ];
 
 // ---- DOM Refs ----
@@ -29,7 +30,7 @@ const historyList = $('#historyList');
 document.addEventListener('DOMContentLoaded', () => {
     renderTodayLabel();
     updateStatusBanner();
-    loadHistory();   // real-time Firebase listener
+    loadHistory();
     form.addEventListener('submit', handleSubmit);
     $('#btnClearHistory').addEventListener('click', clearHistory);
 
@@ -60,10 +61,23 @@ function daysUntil(targetDay) {
     return (targetDay - dayOfWeek() + 7) % 7;
 }
 
-// ---- 核心計算 ----
-function calculate(currentStock, dailyUsage, safetyDays, holidayMultiplier) {
-    const effectiveUsage = dailyUsage * holidayMultiplier;
+// ---- 計算平日/假日天數 ----
+function countWeekdaysAndHolidays(fromDate, toDate) {
+    let weekdays = 0, holidays = 0;
+    const d = new Date(fromDate);
+    d.setHours(0, 0, 0, 0);
+    const end = new Date(toDate);
+    end.setHours(0, 0, 0, 0);
+    while (d < end) {
+        const dow = d.getDay();
+        if (dow === 0 || dow === 6) holidays++; else weekdays++;
+        d.setDate(d.getDate() + 1);
+    }
+    return { weekdays, holidays };
+}
 
+// ---- 核心計算 ----
+function calculate(currentStock, weekdayUsage, holidayUsage, safetyDays) {
     const ranked = CYCLES.map((c) => {
         let dOrder = daysUntil(c.orderDay);
         let dDeliver = daysUntil(c.deliverDay);
@@ -75,13 +89,36 @@ function calculate(currentStock, dailyUsage, safetyDays, holidayMultiplier) {
     const otherCycle = ranked.length > 1 ? ranked[1] : ranked[0];
     let dNextNextDeliver = otherCycle.dDeliver;
     if (dNextNextDeliver <= next.dDeliver) dNextNextDeliver += 7;
-
     const actualCoverDays = dNextNextDeliver - next.dDeliver;
-    const stockAtDelivery = Math.max(0, currentStock - effectiveUsage * next.dDeliver);
-    const safetyStock = effectiveUsage * safetyDays;
-    const rawQty = (actualCoverDays * effectiveUsage) + safetyStock - stockAtDelivery;
+
+    // 日期物件
+    const todayDate = today();
+    todayDate.setHours(0, 0, 0, 0);
+    const deliverDate = new Date(todayDate);
+    deliverDate.setDate(todayDate.getDate() + next.dDeliver);
+    const nextNextDeliverDate = new Date(todayDate);
+    nextNextDeliverDate.setDate(todayDate.getDate() + dNextNextDeliver);
+
+    // 今天→到貨：計算到貨時剩餘庫存
+    const period1 = countWeekdaysAndHolidays(todayDate, deliverDate);
+    const consumeToDeliver = period1.weekdays * weekdayUsage + period1.holidays * holidayUsage;
+    const stockAtDelivery = Math.max(0, currentStock - consumeToDeliver);
+
+    // 到貨→下次到貨：需涵蓋的消耗量
+    const period2 = countWeekdaysAndHolidays(deliverDate, nextNextDeliverDate);
+    const consumeCoverPeriod = period2.weekdays * weekdayUsage + period2.holidays * holidayUsage;
+
+    // 安全庫存：加權平均日用量 × 安全天數
+    const coverTotalDays = period2.weekdays + period2.holidays;
+    const avgDailyUsage = coverTotalDays > 0 ? consumeCoverPeriod / coverTotalDays : weekdayUsage;
+    const safetyStock = avgDailyUsage * safetyDays;
+
+    const rawQty = consumeCoverPeriod + safetyStock - stockAtDelivery;
     const recommendedQty = Math.max(0, Math.ceil(rawQty));
-    const stockDays = effectiveUsage > 0 ? currentStock / effectiveUsage : Infinity;
+
+    // 庫存可撐幾天（加權平均）
+    const overallAvg = (weekdayUsage * 5 + holidayUsage * 2) / 7;
+    const stockDays = overallAvg > 0 ? currentStock / overallAvg : Infinity;
 
     let urgency = 'ok';
     if (stockDays < next.dDeliver) urgency = 'urgent';
@@ -100,8 +137,9 @@ function calculate(currentStock, dailyUsage, safetyDays, holidayMultiplier) {
         stockDays: Math.round(stockDays * 10) / 10,
         needOrder: recommendedQty > 0,
         urgency,
-        effectiveUsage,
-        holidayMultiplier,
+        weekdayUsage,
+        holidayUsage,
+        period2,
     };
 }
 
@@ -196,15 +234,11 @@ function renderResults(result, inputs) {
     const safetyBoxes = Math.round(result.safetyStock * 10) / 10;
     const safetyBottles = Math.round(result.safetyStock * BOTTLES_PER_BOX);
 
-    let holidayRow = '';
-    if (result.holidayMultiplier > 1) {
-        holidayRow = `<div class="detail-row"><span class="detail-label">連假用量倍數</span><span class="detail-value warn">×${result.holidayMultiplier}（實際日用 ${Math.round(result.effectiveUsage * 10) / 10} 箱）</span></div>`;
-    }
-
     $('#detailBox').innerHTML = `
       <div class="detail-row"><span class="detail-label">目前庫存</span><span class="detail-value">${inputs.currentStock} 箱（${inputs.currentStock * BOTTLES_PER_BOX} 瓶）</span></div>
-      <div class="detail-row"><span class="detail-label">每日用量</span><span class="detail-value">${inputs.dailyUsage} 箱/天（${inputs.dailyUsage * BOTTLES_PER_BOX} 瓶）</span></div>
-      ${holidayRow}
+      <div class="detail-row"><span class="detail-label">平日用量</span><span class="detail-value">${inputs.weekdayUsage} 箱/天（${inputs.weekdayUsage * BOTTLES_PER_BOX} 瓶）</span></div>
+      <div class="detail-row"><span class="detail-label">假日用量</span><span class="detail-value">${inputs.holidayUsage} 箱/天（${inputs.holidayUsage * BOTTLES_PER_BOX} 瓶）</span></div>
+      <div class="detail-row"><span class="detail-label">涵蓋期間天數</span><span class="detail-value">平日 ${result.period2.weekdays} 天 / 假日 ${result.period2.holidays} 天</span></div>
       <div class="detail-row"><span class="detail-label">安全庫存</span><span class="detail-value">${safetyBoxes} 箱（${safetyBottles} 瓶 / ${inputs.safetyDays} 天）</span></div>
       <div class="detail-row"><span class="detail-label">到貨後需涵蓋</span><span class="detail-value">${result.coverDays} 天</span></div>
       <div class="detail-row"><span class="detail-label">庫存狀態</span><span class="detail-value ${statusClass}">${statusLabel}</span></div>`;
@@ -218,7 +252,7 @@ function loadHistory() {
     onValue(histRef, (snapshot) => {
         const entries = [];
         snapshot.forEach(child => entries.push(child.val()));
-        entries.reverse(); // newest first
+        entries.reverse();
 
         if (entries.length === 0) {
             historySection.style.display = 'none';
@@ -226,20 +260,32 @@ function loadHistory() {
         }
         historySection.style.display = '';
         historyList.innerHTML = entries.map((e) => {
-            const multiplierTag = e.multiplier > 1 ? ` ×${e.multiplier}` : '';
+            // Support both old format (usage/multiplier) and new format (weekdayUsage/holidayUsage)
+            const weekday = e.weekdayUsage ?? e.usage;
+            const holiday = e.holidayUsage ?? (e.usage * (e.multiplier || 1));
+            const holidayDisplay = e.weekdayUsage != null
+                ? `假日 ${holiday} 箱`
+                : (e.multiplier > 1 ? ` ×${e.multiplier}` : '');
             return `
-      <div class="history-item" data-stock="${e.stock}" data-usage="${e.usage}" data-safety="${e.safety}" data-multiplier="${e.multiplier || 1}">
-        <div><span>庫存 ${e.stock} 箱 ｜ 用量 ${e.usage} 箱/天${multiplierTag}</span></div>
-        <div><span class="hi-result">${e.result} 箱</span><span class="hi-date">${e.date}</span></div>
+      <div class="history-item"
+          data-weekday="${weekday}" data-holiday="${holiday}"
+          data-safety="${e.safety}">
+        <div>
+          <span>庫存 ${e.stock} 箱｜平日 ${weekday} 箱/天｜${e.weekdayUsage != null ? `假日 ${holiday} 箱/天` : `用量 ${weekday} 箱${holidayDisplay}`}</span>
+        </div>
+        <div>
+          <span class="hi-result">${e.result} 箱</span>
+          <span class="hi-date">${e.date}</span>
+        </div>
       </div>`;
         }).join('');
 
         historyList.querySelectorAll('.history-item').forEach((el) => {
             el.addEventListener('click', () => {
-                $('#currentStock').value = el.dataset.stock;
-                $('#dailyUsage').value = el.dataset.usage;
+                $('#currentStock').value = el.dataset.stock || '';
+                $('#weekdayUsage').value = el.dataset.weekday;
+                $('#holidayUsage').value = el.dataset.holiday;
                 $('#safetyDays').value = el.dataset.safety;
-                $('#holidayMultiplier').value = el.dataset.multiplier || 1;
                 form.dispatchEvent(new Event('submit', { cancelable: true }));
             });
         });
@@ -251,7 +297,6 @@ async function saveHistory(entry) {
         const histRef = ref(db, MILK_DB_PATH);
         await push(histRef, { ...entry, timestamp: Date.now() });
 
-        // Trim to 10 entries
         const snapshot = await get(query(histRef, orderByChild('timestamp')));
         if (snapshot.exists()) {
             const keys = [];
@@ -276,28 +321,27 @@ function handleSubmit(e) {
     e.preventDefault();
 
     const currentStock = parseFloat($('#currentStock').value);
-    const dailyUsage = parseFloat($('#dailyUsage').value);
+    const weekdayUsage = parseFloat($('#weekdayUsage').value);
+    const holidayUsage = parseFloat($('#holidayUsage').value);
     const safetyDays = parseFloat($('#safetyDays').value) || 1;
-    const holidayMultiplier = parseFloat($('#holidayMultiplier').value) || 1;
 
-    if (isNaN(currentStock) || isNaN(dailyUsage) || dailyUsage <= 0) {
+    if (isNaN(currentStock) || isNaN(weekdayUsage) || weekdayUsage <= 0 || isNaN(holidayUsage) || holidayUsage < 0) {
         alert('請輸入有效的庫存與用量！');
         return;
     }
 
-    const result = calculate(currentStock, dailyUsage, safetyDays, holidayMultiplier);
-    renderResults(result, { currentStock, dailyUsage, safetyDays, holidayMultiplier });
+    const result = calculate(currentStock, weekdayUsage, holidayUsage, safetyDays);
+    renderResults(result, { currentStock, weekdayUsage, holidayUsage, safetyDays });
     updateStatusBanner(result);
 
     const now = today();
     const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${DAY_NAMES[now.getDay()]}`;
     saveHistory({
         stock: currentStock,
-        usage: dailyUsage,
+        weekdayUsage,
+        holidayUsage,
         safety: safetyDays,
-        multiplier: holidayMultiplier,
         result: result.recommendedQty,
         date: dateStr,
     });
-    // No need to call loadHistory() — onValue listener auto-updates
 }
