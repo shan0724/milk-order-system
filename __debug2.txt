@@ -1,0 +1,100 @@
+﻿    { id: 'p03', name: '?�味?�奶�?,     price: 130, icon: '??' },
+    { id: 'p04', name: '起司?��?�?,     price: 130, icon: '??' },
+    { id: 'p05', name: '法�?香�?餅乾',   price: 100, icon: '??' },
+    { id: 'p06', name: '香�??��?奇普',   price: 130, icon: '?��' },
+    { id: 'p07', name: '巧�??��?仁�???, price: 135, icon: '?��' },
+    { id: 'p08', name: '香�?巧�??��?�?, price: 145, icon: '?��' },
+    { id: 'p09', name: '?��?寶米??,     price:  30, icon: '??' },
+    { id: 'p10', name: '鳳凰??,         price:  32, icon: '?��' },
+    { id: 'p11', name: '?��?鳳梨??,     price:  45, icon: '??' },
+    { id: 'p12', name: '?��?夏�?夷�?�?, price:  50, icon: '?��' },
+    { id: 'p13', name: '?��??��?',       price:  45, icon: '?? },
+    { id: 'p14', name: 'QQ布�?�?,       price:  35, icon: '?��' },
+    { id: 'p15', name: '香�?奶油餅乾',   price:  65, icon: '??' },
+    { id: 'p16', name: '?��?小�???,     price:  60, icon: '??' },
+];
+
+// 購物車�?{ id -> qty }
+const discCart = {};
+
+// LocalStorage keys
+const CUSTOM_PROD_KEY   = 'disc_custom_products';
+const DISC_DELETED_KEY  = 'disc_deleted_ids';
+
+function loadCustomProducts() {
+    try { return JSON.parse(localStorage.getItem(CUSTOM_PROD_KEY) || '[]'); }
+    catch { return []; }
+}
+function saveCustomProducts(list) {
+    localStorage.setItem(CUSTOM_PROD_KEY, JSON.stringify(list));
+}
+function loadDeletedIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(DISC_DELETED_KEY) || '[]')); }
+    catch { return new Set(); }
+}
+function saveDeletedIds(set) {
+    localStorage.setItem(DISC_DELETED_KEY, JSON.stringify([...set]));
+}
+function getAllProducts() {
+    const deleted = loadDeletedIds();
+    const defaults = DISC_PRODUCTS.filter(p => !deleted.has(p.id));
+    return [...defaults, ...loadCustomProducts()];
+}
+
+function discPrice(p) { return Math.round(p.price * DISC_RATE); }
+function discSaving(p) { return p.price - discPrice(p); }
+
+function initDiscountTab() {
+    renderDiscProducts();
+
+    // 清空計�?�?
+    $('#discClearCart').addEventListener('click', () => {
+        Object.keys(discCart).forEach(k => delete discCart[k]);
+        renderDiscCart();
+    });
+
+    // ----- 設�? Modal ?��? -----
+    $('#discOpenSettings').addEventListener('click', openDiscModal);
+    $('#discModalClose').addEventListener('click', closeDiscModal);
+    $('#discModalOverlay').addEventListener('click', (e) => {
+        if (e.target === $('#discModalOverlay')) closeDiscModal();
+    });
+
+    // ?��??��?
+    $('#discAddProduct').addEventListener('click', () => {
+        const name  = $('#newProdName').value.trim();
+        const price = parseInt($('#newProdPrice').value);
+
+        if (!name)  { shakeInput($('#newProdName'));  return; }
+        if (!price || price < 1) { shakeInput($('#newProdPrice')); return; }
+
+        const customs = loadCustomProducts();
+        const newId = 'c' + Date.now();
+        customs.push({ id: newId, name, price, custom: true });
+        saveCustomProducts(customs);
+
+        $('#newProdName').value  = '';
+        $('#newProdPrice').value = '';
+
+        renderDiscProducts();
+        renderAllProductsInModal();
+        showToast('??已新增�?' + name);
+    });
+}
+
+function openDiscModal() {
+    renderAllProductsInModal();
+    $('#discModalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDiscModal() {
+    $('#discModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// ---- 顯示?�?��??��??��?�?+ ?��?）可?�除 ----
+function renderAllProductsInModal() {
+    const all = getAllProducts();
+    const container = $('#discCustomList');
+    if (all.length === 0) {

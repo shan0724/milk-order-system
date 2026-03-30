@@ -1,0 +1,55 @@
+﻿/**
+ * ?�奶?�貨系統 ???��??�輯 (ES Module + Firebase)
+ * ?��?：箱�? �?= 20 ?��?
+ * ?��?：�?平日（週�?～週�?�? ?�日（週六?�週日�?
+ */
+
+import { db, ref, push, onValue, remove, get, query, orderByChild, limitToLast }
+    from './firebase-config.js';
+
+'use strict';
+
+// ---- Constants ----
+const DAY_NAMES = ['?�日', '?��?', '?��?', '?��?', '?��?', '?��?', '?�六'];
+const BOTTLES_PER_BOX = 20;
+const MILK_DB_PATH = 'milk_history';
+
+const CYCLES = [
+    { orderDay: 1, deliverDay: 2, coverDays: 3 },  // ?��?�????��???
+    { orderDay: 3, deliverDay: 5, coverDays: 3 },  // ?��?�????��???
+];
+
+// ---- DOM Refs ----
+const $ = (sel) => document.querySelector(sel);
+const form = $('#orderForm');
+const resultsSection = $('#resultsSection');
+const historySection = $('#historySection');
+const historyList = $('#historyList');
+
+// ---- Init ----
+document.addEventListener('DOMContentLoaded', () => {
+    renderTodayLabel();
+    updateStatusBanner();
+    loadHistory();
+    form.addEventListener('submit', handleSubmit);
+    $('#btnClearHistory').addEventListener('click', clearHistory);
+
+    // ---- Discount Tab Init ----
+    initDiscountTab();
+
+    // Tab switching
+    document.querySelectorAll('.tab-card').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-card').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const target = document.getElementById('tab-' + btn.dataset.tab);
+            if (target) target.classList.add('active');
+        });
+    });
+});
+
+// ---- Helpers ----
+function today() { return new Date(); }
+function dayOfWeek() { return today().getDay(); }
+
