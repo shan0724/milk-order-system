@@ -131,8 +131,8 @@ body {
 /* ========== Tab Card Buttons ========== */
 .tab-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
     margin-bottom: 24px;
 }
 
