@@ -24,18 +24,7 @@ const $ = (sel) => document.querySelector(sel);
 
 // ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
-    const form = $('#orderForm');
-    if (form) form.addEventListener('submit', handleSubmit);
-    const clearBtn = $('#btnClearHistory');
-    if (clearBtn) clearBtn.addEventListener('click', clearHistory);
-    renderTodayLabel();
-    updateStatusBanner();
-    loadHistory();
-
-    // ---- Discount Tab Init ----
-    initDiscountTab();
-
-    // Tab switching
+    // Tab switching -- 最優先綁定，避免其他初始化出錯影響
     document.querySelectorAll('.tab-card').forEach((btn) => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-card').forEach(b => b.classList.remove('active'));
@@ -45,6 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target) target.classList.add('active');
         });
     });
+
+    const form = $('#orderForm');
+    if (form) form.addEventListener('submit', handleSubmit);
+    const clearBtn = $('#btnClearHistory');
+    if (clearBtn) clearBtn.addEventListener('click', clearHistory);
+    renderTodayLabel();
+    updateStatusBanner();
+    loadHistory();
+
+    // ---- Discount Tab Init ----
+    try { initDiscountTab(); } catch(e) { console.error('[initDiscountTab error]', e); }
 });
 
 // ---- Helpers ----
