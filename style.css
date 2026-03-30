@@ -1378,6 +1378,116 @@ body {
     }
 }
 
+/* ========== Discount – Two Column Layout ========== */
+.disc-two-col {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.disc-left-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.disc-right-col {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 16px;
+}
+
+.disc-right-col .disc-cart-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+    min-height: 120px;
+}
+
+/* ========== Discount – Card without icon ========== */
+.disc-prod-card {
+    cursor: default;
+}
+
+.dpc-click-area {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.dpc-del-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(248, 113, 113, 0.0);
+    color: rgba(255,255,255,0.25);
+    font-size: 0.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+    padding: 0;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.disc-prod-card:hover .dpc-del-btn {
+    color: #f87171;
+    border-color: rgba(248,113,113,0.35);
+    background: rgba(248,113,113,0.12);
+}
+
+.dpc-del-btn:hover {
+    transform: scale(1.2);
+    background: rgba(248,113,113,0.25) !important;
+}
+
+/* ========== Discount – Cart Empty State ========== */
+.disc-cart-empty {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 24px 8px;
+    line-height: 1.6;
+}
+
+/* Adjust cart row for narrow right panel */
+.disc-right-col .disc-cart-row {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.disc-right-col .dcr-info {
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+}
+
+.disc-right-col .dcr-ctrl {
+    width: 100%;
+    justify-content: flex-end;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 600px) {
+    .disc-two-col {
+        flex-direction: column;
+    }
+    .disc-right-col {
+        width: 100%;
+        position: static;
+    }
+}
+
 /* ========== Discount – Header Row ========== */
 .disc-header-row {
     display: flex;

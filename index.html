@@ -365,25 +365,36 @@
             <!-- 折扣說明 -->
             <section class="status-banner disc-banner">
                 <div class="status-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></div>
-                <span>全品項 <strong>8折優惠</strong>｜點擊品項加入計算機，按 + / − 調整數量</span>
+                <span>全品項 <strong>8折優惠</strong>｜點擊品項加入右側計算機，可按 + / − 調整數量</span>
             </section>
 
-            <!-- 品項卡片列表 -->
-            <section class="form-section" style="padding-top:12px;">
-                <div class="disc-header-row">
-                    <h2 class="section-title" style="margin-bottom:0;">🍪 品項價目表（8折）</h2>
-                    <button class="disc-setting-btn" id="discOpenSettings" title="新增/管理商品">⚙️ 管理商品</button>
+            <!-- 左右分欄佈局 -->
+            <div class="disc-two-col">
+
+                <!-- 左：品項列表 -->
+                <div class="disc-left-col">
+                    <section class="form-section" style="padding-top:12px;">
+                        <div class="disc-header-row">
+                            <h2 class="section-title" style="margin-bottom:0;">🍪 品項價目表</h2>
+                            <button class="disc-setting-btn" id="discOpenSettings" title="新增/管理商品">⚙️ 管理商品</button>
+                        </div>
+                        <div class="disc-product-grid" id="discProductGrid"></div>
+                    </section>
                 </div>
-                <div class="disc-product-grid" id="discProductGrid"></div>
-            </section>
 
-            <!-- 計算機結果 -->
-            <section class="disc-cart-section" id="discCartSection" style="display:none;">
-                <h2 class="section-title">🧮 計算機</h2>
-                <div class="disc-cart-list" id="discCartList"></div>
-                <div class="disc-summary" id="discSummary"></div>
-                <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;">清空計算機</button>
-            </section>
+                <!-- 右：計算機 -->
+                <div class="disc-right-col">
+                    <section class="disc-cart-section" id="discCartSection">
+                        <h2 class="section-title">🧮 計算機</h2>
+                        <div class="disc-cart-list" id="discCartList">
+                            <p class="disc-cart-empty">&larr; 點擊左側品項加入</p>
+                        </div>
+                        <div class="disc-summary" id="discSummary"></div>
+                        <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;display:none;">清空計算機</button>
+                    </section>
+                </div>
+
+            </div>
 
         </div>
 
@@ -405,10 +416,6 @@
                 <h4 class="disc-modal-sub">➕ 新增商品</h4>
                 <div class="disc-add-form">
                     <div class="disc-add-row">
-                        <div class="disc-add-field">
-                            <label for="newProdIcon">圖示（表情符號）</label>
-                            <input type="text" id="newProdIcon" maxlength="4" placeholder="🍰" class="disc-add-input disc-add-icon">
-                        </div>
                         <div class="disc-add-field" style="flex:2;">
                             <label for="newProdName">商品名稱</label>
                             <input type="text" id="newProdName" placeholder="例如：起司蛋糕" class="disc-add-input">
@@ -422,16 +429,14 @@
                 </div>
             </div>
 
-            <!-- 自訂商品列表 -->
+            <!-- 全部商品列表 -->
             <div class="disc-modal-section">
-                <h4 class="disc-modal-sub">📋 自訂商品列表</h4>
-                <div class="disc-custom-list" id="discCustomList">
-                    <p class="disc-empty-hint">尚未新增任何自訂商品</p>
-                </div>
+                <h4 class="disc-modal-sub">📋 全部商品（點圖示刪除）</h4>
+                <div class="disc-custom-list" id="discCustomList"></div>
             </div>
 
             <div class="disc-modal-footer">
-                <p class="disc-modal-note">💡 預設 16 個品項無法刪除，自訂商品可個別刪除</p>
+                <p class="disc-modal-note">💡 删除後可在圖示列表重新導入，或清除瀏覽器維持所有設定</p>
             </div>
         </div>
     </div>
