@@ -1379,9 +1379,14 @@ body {
 }
 
 /* ========== Discount – Two Column Layout ========== */
+/* Let the tab-discount break out of the narrow .app container */
+#tab-discount {
+    margin: 0 -4px;
+}
+
 .disc-two-col {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: flex-start;
 }
 
@@ -1391,7 +1396,7 @@ body {
 }
 
 .disc-right-col {
-    width: 220px;
+    width: 200px;
     flex-shrink: 0;
     position: sticky;
     top: 16px;
@@ -1400,35 +1405,68 @@ body {
 .disc-right-col .disc-cart-section {
     background: var(--bg-card);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(245,158,11,0.2);
     border-radius: var(--radius);
-    padding: 18px 16px;
-    min-height: 120px;
+    padding: 16px 14px;
+    min-height: 200px;
 }
 
-/* ========== Discount – Card without icon ========== */
+/* Product grid: 2 columns for readability */
+.disc-product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+}
+
+/* Larger, cleaner product card without icon */
 .disc-prod-card {
+    padding: 12px 10px 10px;
     cursor: default;
 }
 
+.dpc-name {
+    font-size: 0.82rem !important;
+    min-height: auto !important;
+    margin-bottom: 6px !important;
+    text-align: left;
+    justify-content: flex-start !important;
+}
+
+.dpc-prices {
+    justify-content: flex-start !important;
+    gap: 6px !important;
+}
+
+.dpc-orig {
+    font-size: 0.72rem !important;
+}
+
+.dpc-sale {
+    font-size: 0.95rem !important;
+}
+
+.dpc-saving {
+    font-size: 0.68rem !important;
+    text-align: left;
+}
+
+/* ========== Discount – Card delete button ========== */
 .dpc-click-area {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 0;
 }
 
 .dpc-del-btn {
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(248, 113, 113, 0.0);
-    color: rgba(255,255,255,0.25);
-    font-size: 0.6rem;
+    background: transparent;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.55rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1441,12 +1479,12 @@ body {
 
 .disc-prod-card:hover .dpc-del-btn {
     color: #f87171;
-    border-color: rgba(248,113,113,0.35);
+    border-color: rgba(248,113,113,0.4);
     background: rgba(248,113,113,0.12);
 }
 
 .dpc-del-btn:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
     background: rgba(248,113,113,0.25) !important;
 }
 
@@ -1455,29 +1493,52 @@ body {
     font-size: 0.78rem;
     color: var(--text-muted);
     text-align: center;
-    padding: 24px 8px;
-    line-height: 1.6;
+    padding: 32px 8px;
+    line-height: 1.8;
 }
 
-/* Adjust cart row for narrow right panel */
+/* Compact cart row for narrower right panel */
 .disc-right-col .disc-cart-row {
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     align-items: flex-start;
+    padding: 8px 0;
 }
 
 .disc-right-col .dcr-info {
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     align-items: flex-start;
+    width: 100%;
+}
+
+.disc-right-col .dcr-name {
+    font-size: 0.78rem;
+}
+
+.disc-right-col .dcr-unit {
+    font-size: 0.68rem;
 }
 
 .disc-right-col .dcr-ctrl {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 4px;
 }
 
-/* Responsive: stack on small screens */
+.disc-right-col .dcr-subtotal {
+    font-size: 0.82rem;
+}
+
+.disc-right-col .disc-sum-row {
+    font-size: 0.8rem;
+}
+
+.disc-right-col .disc-sum-saving {
+    font-size: 1.1rem;
+}
+
+/* Responsive: stack vertically on mobile */
 @media (max-width: 600px) {
     .disc-two-col {
         flex-direction: column;
@@ -1485,6 +1546,9 @@ body {
     .disc-right-col {
         width: 100%;
         position: static;
+    }
+    .disc-product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
 

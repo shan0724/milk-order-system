@@ -360,12 +360,12 @@
         </div>
 
         <!-- ==================== DISCOUNT TAB ==================== -->
-        <div class="tab-content" id="tab-discount">
+        <div class="tab-content active-disc" id="tab-discount">
 
             <!-- 折扣說明 -->
             <section class="status-banner disc-banner">
                 <div class="status-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></div>
-                <span>全品項 <strong>8折優惠</strong>｜點擊品項加入右側計算機，可按 + / − 調整數量</span>
+                <span>全品項 <strong>8折優惠</strong>｜點擊左側品項加入右側計算機，可按 + / − 調整數量</span>
             </section>
 
             <!-- 左右分欄佈局 -->
@@ -375,7 +375,7 @@
                 <div class="disc-left-col">
                     <section class="form-section" style="padding-top:12px;">
                         <div class="disc-header-row">
-                            <h2 class="section-title" style="margin-bottom:0;">🍪 品項價目表</h2>
+                            <h2 class="section-title" style="margin-bottom:0;">品項價目表</h2>
                             <button class="disc-setting-btn" id="discOpenSettings" title="新增/管理商品">⚙️ 管理商品</button>
                         </div>
                         <div class="disc-product-grid" id="discProductGrid"></div>
@@ -385,12 +385,12 @@
                 <!-- 右：計算機 -->
                 <div class="disc-right-col">
                     <section class="disc-cart-section" id="discCartSection">
-                        <h2 class="section-title">🧮 計算機</h2>
+                        <h2 class="section-title">計算機</h2>
                         <div class="disc-cart-list" id="discCartList">
-                            <p class="disc-cart-empty">&larr; 點擊左側品項加入</p>
+                            <p class="disc-cart-empty">← 點擊左側品項加入</p>
                         </div>
                         <div class="disc-summary" id="discSummary"></div>
-                        <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;display:none;">清空計算機</button>
+                        <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;display:none;">清空</button>
                     </section>
                 </div>
 
