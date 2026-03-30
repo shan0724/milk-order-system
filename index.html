@@ -107,6 +107,12 @@
                 <div class="tab-card-desc">每月兩次配送</div>
                 <div class="tab-card-glow"></div>
             </button>
+            <button class="tab-card" data-tab="discount">
+                <div class="tab-card-icon">🏷️</div>
+                <div class="tab-card-label">商品打折</div>
+                <div class="tab-card-desc">折扣計算工具</div>
+                <div class="tab-card-glow"></div>
+            </button>
         </nav>
 
         <!-- ==================== MILK TAB ==================== -->
@@ -353,9 +359,81 @@
             </section>
         </div>
 
+        <!-- ==================== DISCOUNT TAB ==================== -->
+        <div class="tab-content" id="tab-discount">
+
+            <!-- 折扣說明 -->
+            <section class="status-banner disc-banner">
+                <div class="status-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></div>
+                <span>全品項 <strong>8折優惠</strong>｜點擊品項加入計算機，按 + / − 調整數量</span>
+            </section>
+
+            <!-- 品項卡片列表 -->
+            <section class="form-section" style="padding-top:12px;">
+                <div class="disc-header-row">
+                    <h2 class="section-title" style="margin-bottom:0;">🍪 品項價目表（8折）</h2>
+                    <button class="disc-setting-btn" id="discOpenSettings" title="新增/管理商品">⚙️ 管理商品</button>
+                </div>
+                <div class="disc-product-grid" id="discProductGrid"></div>
+            </section>
+
+            <!-- 計算機結果 -->
+            <section class="disc-cart-section" id="discCartSection" style="display:none;">
+                <h2 class="section-title">🧮 計算機</h2>
+                <div class="disc-cart-list" id="discCartList"></div>
+                <div class="disc-summary" id="discSummary"></div>
+                <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;">清空計算機</button>
+            </section>
+
+        </div>
+
         <footer class="footer">
             <p>叫貨系統 v2.0</p>
         </footer>
+    </div>
+
+    <!-- ========== 設定 Modal ========== -->
+    <div class="disc-modal-overlay" id="discModalOverlay">
+        <div class="disc-modal" id="discModal">
+            <div class="disc-modal-header">
+                <h3>⚙️ 管理商品</h3>
+                <button class="disc-modal-close" id="discModalClose">✕</button>
+            </div>
+
+            <!-- 新增商品表單 -->
+            <div class="disc-modal-section">
+                <h4 class="disc-modal-sub">➕ 新增商品</h4>
+                <div class="disc-add-form">
+                    <div class="disc-add-row">
+                        <div class="disc-add-field">
+                            <label for="newProdIcon">圖示（表情符號）</label>
+                            <input type="text" id="newProdIcon" maxlength="4" placeholder="🍰" class="disc-add-input disc-add-icon">
+                        </div>
+                        <div class="disc-add-field" style="flex:2;">
+                            <label for="newProdName">商品名稱</label>
+                            <input type="text" id="newProdName" placeholder="例如：起司蛋糕" class="disc-add-input">
+                        </div>
+                        <div class="disc-add-field">
+                            <label for="newProdPrice">原價（元）</label>
+                            <input type="number" id="newProdPrice" min="1" step="1" placeholder="100" class="disc-add-input disc-add-price">
+                        </div>
+                    </div>
+                    <button class="disc-add-btn" id="discAddProduct">＋ 加入商品列表</button>
+                </div>
+            </div>
+
+            <!-- 自訂商品列表 -->
+            <div class="disc-modal-section">
+                <h4 class="disc-modal-sub">📋 自訂商品列表</h4>
+                <div class="disc-custom-list" id="discCustomList">
+                    <p class="disc-empty-hint">尚未新增任何自訂商品</p>
+                </div>
+            </div>
+
+            <div class="disc-modal-footer">
+                <p class="disc-modal-note">💡 預設 16 個品項無法刪除，自訂商品可個別刪除</p>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>

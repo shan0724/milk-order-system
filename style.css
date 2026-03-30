@@ -527,45 +527,102 @@ body {
 }
 
 .safety-btn {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 14px 8px 12px;
+    gap: 6px;
+    padding: 20px 8px 16px;
     border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     background: var(--bg-input);
     cursor: pointer;
     transition: var(--transition);
     font-family: inherit;
     color: var(--text-muted);
+    overflow: hidden;
+}
+
+.safety-btn::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    opacity: 0;
+    filter: blur(22px);
+    transition: var(--transition);
+}
+
+.safety-btn[data-days="1"]::before {
+    background: rgba(52, 211, 153, 0.35);
+}
+
+.safety-btn[data-days="2"]::before {
+    background: rgba(251, 191, 36, 0.35);
+}
+
+.safety-btn[data-days="3"]::before {
+    background: rgba(248, 113, 113, 0.35);
 }
 
 .safety-btn:hover {
     border-color: var(--border-light);
     background: var(--bg-card-hover);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
 }
 
-.safety-btn.active {
-    border-color: rgba(167, 139, 250, 0.4);
-    background: rgba(167, 139, 250, 0.08);
+.safety-btn:hover::before {
+    opacity: 0.5;
+}
+
+.safety-btn.active::before {
+    opacity: 1;
+}
+
+.safety-btn[data-days="1"].active {
+    border-color: rgba(52, 211, 153, 0.45);
+    background: linear-gradient(170deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.02));
     color: var(--text-primary);
-    box-shadow: 0 0 16px rgba(167, 139, 250, 0.12);
+    box-shadow: 0 4px 20px rgba(52, 211, 153, 0.15);
+}
+
+.safety-btn[data-days="2"].active {
+    border-color: rgba(251, 191, 36, 0.45);
+    background: linear-gradient(170deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.02));
+    color: var(--text-primary);
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
+}
+
+.safety-btn[data-days="3"].active {
+    border-color: rgba(248, 113, 113, 0.45);
+    background: linear-gradient(170deg, rgba(248, 113, 113, 0.1), rgba(248, 113, 113, 0.02));
+    color: var(--text-primary);
+    box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
 }
 
 .safety-icon {
-    font-size: 1.3rem;
+    font-size: 1.6rem;
+    transition: var(--transition);
+}
+
+.safety-btn.active .safety-icon {
+    transform: scale(1.2);
 }
 
 .safety-label {
-    font-size: 0.85rem;
+    font-size: 0.92rem;
     font-weight: 700;
 }
 
 .safety-desc {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
+    transition: var(--transition-fast);
 }
 
 .safety-btn.active .safety-desc {
@@ -1016,4 +1073,590 @@ body {
     .form-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* ========== Discount Tab – Tab Card ========== */
+.tab-cards {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tab-card[data-tab="discount"].active {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: linear-gradient(165deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 146, 60, 0.06) 100%);
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.18);
+}
+
+.tab-card[data-tab="discount"] .tab-card-glow {
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.tab-card[data-tab="discount"].active::after {
+    background: linear-gradient(90deg, #f59e0b, #fb923c);
+}
+
+/* ========== Discount – Product Grid ========== */
+.disc-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.disc-prod-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.disc-prod-card:hover {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.15);
+}
+
+.disc-prod-card:active {
+    transform: scale(0.96);
+}
+
+.disc-prod-card.dpc-selected {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: linear-gradient(160deg, rgba(245, 158, 11, 0.12), rgba(251, 146, 60, 0.05));
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+}
+
+.dpc-icon {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+    transition: var(--transition);
+}
+
+.disc-prod-card:hover .dpc-icon {
+    transform: scale(1.15);
+}
+
+.dpc-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dpc-prices {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+
+.dpc-orig {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.dpc-sale {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #fbbf24;
+}
+
+.dpc-saving {
+    font-size: 0.65rem;
+    color: var(--green);
+    font-weight: 600;
+}
+
+/* 數量徽章 */
+.dpc-qty-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f59e0b;
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+    animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+}
+
+/* ========== Discount – Cart Section ========== */
+.disc-cart-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    margin-bottom: 24px;
+    animation: tabSlideIn 0.4s ease;
+}
+
+.disc-cart-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+}
+
+.disc-cart-row:last-child {
+    border-bottom: none;
+}
+
+.dcr-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.dcr-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.dcr-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dcr-unit {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dcr-unit strong {
+    color: #fbbf24;
+}
+
+.dcr-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dcr-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+}
+
+.dcr-btn:hover {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+}
+
+.dcr-qty {
+    font-size: 0.95rem;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.dcr-subtotal {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fbbf24;
+    min-width: 44px;
+    text-align: right;
+}
+
+/* ========== Discount – Summary ========== */
+.disc-summary {
+    margin-top: 16px;
+    background: rgba(10, 14, 26, 0.6);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+}
+
+.disc-sum-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.disc-sum-row:last-child {
+    border-bottom: none;
+}
+
+.disc-sum-orig {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    font-size: 0.88rem;
+}
+
+.disc-sum-sale {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.disc-sum-saving-row {
+    padding-top: 14px;
+    margin-top: 4px;
+}
+
+.disc-sum-saving {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+}
+
+/* ========== Responsive for 3-col tab ========== */
+@media (max-width: 480px) {
+    .tab-cards {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .tab-card {
+        padding: 14px 6px 12px;
+    }
+    .tab-card-icon {
+        font-size: 1.6rem;
+    }
+    .tab-card-label {
+        font-size: 0.78rem;
+    }
+    .tab-card-desc {
+        font-size: 0.62rem;
+    }
+    .disc-product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .dpc-name {
+        font-size: 0.65rem;
+    }
+}
+
+/* ========== Discount – Header Row ========== */
+.disc-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+
+.disc-setting-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.08);
+    color: #fbbf24;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    white-space: nowrap;
+}
+
+.disc-setting-btn:hover {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: rgba(245, 158, 11, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
+}
+
+/* ========== Discount – Modal Overlay ========== */
+.disc-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 8000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.disc-modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.disc-modal {
+    background: #111827;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.disc-modal-overlay.open .disc-modal {
+    transform: translateY(0);
+}
+
+.disc-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    position: sticky;
+    top: 0;
+    background: #111827;
+    z-index: 1;
+}
+
+.disc-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.disc-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-light);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+.disc-modal-close:hover {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #f87171;
+}
+
+.disc-modal-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.disc-modal-section:last-child {
+    border-bottom: none;
+}
+
+.disc-modal-sub {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+}
+
+/* ========== Discount – Add Form ========== */
+.disc-add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.disc-add-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.disc-add-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.disc-add-field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.disc-add-input {
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.disc-add-input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.disc-add-icon {
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.disc-add-price {
+    width: 80px;
+}
+
+.disc-add-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #000;
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+.disc-add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45);
+}
+
+/* ========== Discount – Custom List Items ========== */
+.disc-custom-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.disc-custom-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: var(--transition-fast);
+}
+
+.disc-custom-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-light);
+}
+
+.dci-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.dci-name {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dci-price {
+    font-size: 0.78rem;
+    color: #fbbf24;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dci-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 6px;
+    transition: var(--transition-fast);
+    opacity: 0.5;
+}
+
+.dci-del:hover {
+    opacity: 1;
+    background: rgba(248, 113, 113, 0.15);
+}
+
+.disc-empty-hint {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 16px 0;
+}
+
+.disc-modal-footer {
+    padding: 14px 24px 24px;
+}
+
+.disc-modal-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ========== Shake animation ========== */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
 }
