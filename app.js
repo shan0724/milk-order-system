@@ -21,18 +21,16 @@ const CYCLES = [
 
 // ---- DOM Refs ----
 const $ = (sel) => document.querySelector(sel);
-const form = $('#orderForm');
-const resultsSection = $('#resultsSection');
-const historySection = $('#historySection');
-const historyList = $('#historyList');
 
 // ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
+    const form = $('#orderForm');
+    if (form) form.addEventListener('submit', handleSubmit);
+    const clearBtn = $('#btnClearHistory');
+    if (clearBtn) clearBtn.addEventListener('click', clearHistory);
     renderTodayLabel();
     updateStatusBanner();
     loadHistory();
-    form.addEventListener('submit', handleSubmit);
-    $('#btnClearHistory').addEventListener('click', clearHistory);
 
     // ---- Discount Tab Init ----
     initDiscountTab();
@@ -178,7 +176,7 @@ function updateStatusBanner(result) {
 
 // ---- Render Results ----
 function renderResults(result, inputs) {
-    resultsSection.style.display = '';
+    $('#resultsSection').style.display = '';
 
     const tmpl = [];
     const dow = dayOfWeek();
@@ -246,7 +244,7 @@ function renderResults(result, inputs) {
       <div class="detail-row"><span class="detail-label">?�貨後�?涵�?</span><span class="detail-value">${result.coverDays} �?/span></div>
       <div class="detail-row"><span class="detail-label">庫�??�??/span><span class="detail-value ${statusClass}">${statusLabel}</span></div>`;
 
-    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ---- History (Firebase Realtime Database) ----
@@ -258,11 +256,11 @@ function loadHistory() {
         entries.reverse();
 
         if (entries.length === 0) {
-            historySection.style.display = 'none';
+            $('#historySection').style.display = 'none';
             return;
         }
-        historySection.style.display = '';
-        historyList.innerHTML = entries.map((e) => {
+        $('#historySection').style.display = '';
+        $('#historyList').innerHTML = entries.map((e) => {
             // Support both old format (usage/multiplier) and new format (weekdayUsage/holidayUsage)
             const weekday = e.weekdayUsage ?? e.usage;
             const holiday = e.holidayUsage ?? (e.usage * (e.multiplier || 1));
@@ -283,13 +281,13 @@ function loadHistory() {
       </div>`;
         }).join('');
 
-        historyList.querySelectorAll('.history-item').forEach((el) => {
+        $('#historyList').querySelectorAll('.history-item').forEach((el) => {
             el.addEventListener('click', () => {
                 $('#currentStock').value = el.dataset.stock || '';
                 $('#weekdayUsage').value = el.dataset.weekday;
                 $('#holidayUsage').value = el.dataset.holiday;
                 $('#safetyDays').value = el.dataset.safety;
-                form.dispatchEvent(new Event('submit', { cancelable: true }));
+                $('#orderForm').dispatchEvent(new Event('submit', { cancelable: true }));
             });
         });
     });
@@ -627,9 +625,3 @@ window.discChangeQty = function(id, delta) {
     updateDiscBadge(id);
     renderDiscCart();
 };
-
-function loadCustomProducts() {
-    try {
-        return JSON.parse(localStorage.getItem(CUSTOM_PROD_KEY) || '[]');
-    } catch { return []; }
-}
