@@ -1,443 +1,710 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>叫貨系統</title>
-    <meta name="description" content="牛奶與冰淇淋用量評估與叫貨建議系統">
+    <title>智慧叫貨與折扣系統</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Coverage mode selector */
-        .coverage-mode-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 4px;
+        :root {
+            --primary: #3b9eff;
+            --primary-glow: rgba(59, 158, 255, 0.3);
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
         }
 
-        .coverage-mode-btn {
-            flex: 1;
-            padding: 14px 10px;
-            border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.85rem;
-            line-height: 1.5;
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, transparent 50%),
+                        radial-gradient(circle at 0% 100%, #0f172a 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .app { max-width: 800px; margin: 0 auto; padding: 20px 16px 100px; }
+
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 2rem; font-weight: 800; margin: 0; letter-spacing: -0.025em; }
+        .header-subtitle { color: var(--text-dim); margin: 4px 0; font-size: 0.9rem; }
+        .header-date { font-size: 0.85rem; background: rgba(255,255,255,0.05); display: inline-block; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); margin-top: 8px; }
+
+        .tab-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+        .tab-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 8px;
             text-align: center;
-            transition: all 0.2s;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: var(--text-dim);
         }
-
-        .coverage-mode-btn .mode-icon {
-            font-size: 1.4rem;
-            display: block;
-            margin-bottom: 4px;
+        .tab-card.active {
+            border-color: var(--primary);
+            background: rgba(59, 158, 255, 0.1);
+            color: var(--text-main);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px var(--primary-glow);
+            transform: translateY(-2px);
         }
+        .tab-card-icon { font-size: 1.5rem; margin-bottom: 4px; display: block; }
+        .tab-card-label { font-weight: 700; font-size: 0.85rem; display: block; }
+        .tab-card-desc { font-size: 0.7rem; opacity: 0.6; display: block; }
 
-        .coverage-mode-btn .mode-title {
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 0.9rem;
-            display: block;
-        }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .coverage-mode-btn .mode-desc {
-            font-size: 0.75rem;
-            opacity: 0.65;
-            display: block;
-        }
-
-        .coverage-mode-btn.active {
-            border-color: #3b9eff;
-            background: rgba(59, 158, 255, 0.15);
-            color: #fff;
-            box-shadow: 0 0 16px rgba(59, 158, 255, 0.25);
-        }
-
-        .coverage-mode-btn.active .mode-title {
-            color: #7dc8ff;
-        }
-
-        .coverage-mode-btn:hover:not(.active) {
-            border-color: rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .form-label-row {
+        .status-banner {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; }
+
+        .form-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); }
+        .section-title { font-size: 1.1rem; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; color: var(--text-dim); }
+        .input-wrapper { position: relative; }
+        .input-wrapper input {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 45px 12px 16px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-wrapper input:focus { border-color: var(--primary); }
+        .input-unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 0.85rem; font-weight: 500; }
+        .input-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; opacity: 0.7; }
+
+        .form-row { display: flex; gap: 12px; }
+        .form-group.half { flex: 1; }
+
+        .btn-calculate {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn-calculate:active { transform: scale(0.98); opacity: 0.9; }
+
+        .coverage-mode-group { display: flex; gap: 10px; margin-bottom: 16px; }
+        .coverage-mode-btn {
+            flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--border);
+            background: rgba(255,255,255,0.04); color: var(--text-dim); cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .coverage-mode-btn.active { border-color: var(--primary); background: rgba(59, 158, 255, 0.15); color: #fff; }
+        .mode-title { display: block; font-weight: 700; font-size: 0.9rem; }
+        .mode-desc { display: block; font-size: 0.75rem; opacity: 0.6; }
+
+        .safety-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+        .safety-btn {
+            padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04); color: var(--text-dim); cursor: pointer; text-align: left;
+        }
+        .safety-btn.active { border-color: var(--primary); background: rgba(59, 158, 255, 0.1); color: #fff; }
+        .safety-label { font-weight: 600; font-size: 0.85rem; display: block; }
+        .safety-desc { font-size: 0.7rem; opacity: 0.6; }
+
+        .product-group { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 16px; 
+            margin-bottom: 16px;
+        }
+        .product-header { 
+            display: flex; 
+            align-items: center; 
             justify-content: space-between;
-            margin-bottom: 8px;
+            gap: 8px; 
+            margin-bottom: 12px; 
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .product-spec { 
+            font-size: 0.7rem; 
+            color: var(--primary); 
+            background: rgba(59, 158, 255, 0.1); 
+            padding: 2px 8px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(59, 158, 255, 0.2);
         }
 
-        .form-label-row label {
-            margin-bottom: 0;
+        .results-section { margin-top: 24px; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .res-card { background: linear-gradient(135deg, rgba(59, 158, 255, 0.2), rgba(30, 41, 59, 0.8)); border: 1px solid var(--primary); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .res-val { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .detail-box { margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; font-size: 0.85rem; color: var(--text-dim); }
+
+        .disc-layout { display: flex; flex-direction: column; gap: 16px; }
+        
+        @media (min-width: 640px) {
+            .disc-layout { flex-direction: row; align-items: flex-start; }
+            .disc-main { flex: 1; }
+            .disc-side { width: 240px; position: sticky; top: 10px; }
         }
+
+        .disc-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+        .disc-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; min-height: 70px; }
+        .disc-item:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.05); transform: translateY(-2px); }
+        .disc-item-name { font-weight: 600; font-size: 0.8rem; margin-bottom: 4px; display: block; line-height: 1.2; }
+        .disc-item-price { color: #f59e0b; font-weight: 700; font-size: 0.85rem; }
+
+        .disc-cart-section { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px; padding: 16px; }
+        .disc-cart-list { margin-bottom: 12px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+        .cart-row { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 4px; }
+        .cart-item-name { font-size: 0.85rem; font-weight: 600; }
+        .cart-qty-controls { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        
+        .disc-summary { border-top: 2px dashed rgba(255,255,255,0.1); padding-top: 12px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem; color: var(--text-dim); }
+        .summary-total-row { display: flex; flex-direction: column; text-align: right; margin-top: 8px; }
+        .summary-total { font-size: 1.3rem; font-weight: 800; color: #f59e0b; }
+        .summary-savings { color: #10b981; font-weight: 700; font-size: 1.1rem; }
+
+        .disc-modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .disc-modal { background: #1e293b; border-radius: 24px; width: 100%; max-width: 400px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .disc-modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+        .disc-modal-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+        .disc-add-input { width: 100%; background: #0f172a; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: #fff; margin-bottom: 12px; outline: none; }
+        .disc-add-input:focus { border-color: #10b981; }
+        .disc-add-btn { width: 100%; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .disc-custom-list { max-height: 250px; overflow-y: auto; margin-top: 16px; padding-right: 4px; }
+        .disc-custom-list::-webkit-scrollbar { width: 4px; }
+        .disc-custom-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .custom-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; align-items: center; }
+        .del-btn { color: #ef4444; cursor: pointer; font-size: 0.8rem; font-weight: 700; }
+
+        .cycle-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .cycle-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+        .cycle-card.full-width { grid-column: span 2; }
+        .cycle-label { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .cycle-flow { font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .cycle-cover { font-size: 0.7rem; color: var(--text-dim); margin-top: 4px; }
+
+        .footer { text-align: center; margin-top: 40px; color: var(--text-dim); font-size: 0.8rem; }
     </style>
 </head>
-
 <body>
     <div class="bg-glow"></div>
     <div class="app">
-        <!-- Header -->
         <header class="header">
             <h1>叫貨系統</h1>
             <p class="header-subtitle">智慧評估 · 精準叫貨</p>
             <div class="header-date" id="todayLabel"></div>
         </header>
 
-        <!-- Tab Buttons — Card Style -->
         <nav class="tab-cards" id="tabNav">
             <button class="tab-card active" data-tab="milk">
-                <div class="tab-card-icon">🥛</div>
-                <div class="tab-card-label">牛奶叫貨</div>
-                <div class="tab-card-desc">每週兩次配送</div>
-                <div class="tab-card-glow"></div>
+                <span class="tab-card-icon">🥛</span>
+                <span class="tab-card-label">牛奶叫貨</span>
+                <span class="tab-card-desc">每週兩次</span>
             </button>
             <button class="tab-card" data-tab="icecream">
-                <div class="tab-card-icon">🍦</div>
-                <div class="tab-card-label">冰淇淋叫貨</div>
-                <div class="tab-card-desc">每月兩次配送</div>
-                <div class="tab-card-glow"></div>
+                <span class="tab-card-icon">🍦</span>
+                <span class="tab-card-label">冰淇淋</span>
+                <span class="tab-card-desc">每月兩次</span>
             </button>
             <button class="tab-card" data-tab="discount">
-                <div class="tab-card-icon">🏷️</div>
-                <div class="tab-card-label">商品打折</div>
-                <div class="tab-card-desc">折扣計算工具</div>
-                <div class="tab-card-glow"></div>
+                <span class="tab-card-icon">🏷️</span>
+                <span class="tab-card-label">商品打折</span>
+                <span class="tab-card-desc">計算機</span>
             </button>
         </nav>
 
-        <!-- ==================== MILK TAB ==================== -->
+        <!-- MILK TAB -->
         <div class="tab-content active" id="tab-milk">
-            <section class="status-banner" id="statusBanner">
+            <section class="status-banner">
                 <div class="status-dot"></div>
-                <span id="statusText">載入中...</span>
+                <span id="statusText">正在計算下次叫貨日...</span>
             </section>
 
-            <section class="cycle-info">
+            <div class="cycle-info">
                 <div class="cycle-card">
                     <div class="cycle-label">週期 A</div>
-                    <div class="cycle-flow">
-                        <span class="cycle-day order">週一訂</span>
-                        <span class="cycle-arrow">→</span>
-                        <span class="cycle-day deliver">週二到</span>
-                    </div>
-                    <div class="cycle-cover">涵蓋 週二～週四（3天）</div>
+                    <div class="cycle-flow">週一訂 → 週二到</div>
+                    <div class="cycle-cover">涵蓋 週二～週四</div>
                 </div>
                 <div class="cycle-card">
                     <div class="cycle-label">週期 B</div>
-                    <div class="cycle-flow">
-                        <span class="cycle-day order">週三訂</span>
-                        <span class="cycle-arrow">→</span>
-                        <span class="cycle-day deliver">週五到</span>
-                    </div>
-                    <div class="cycle-cover">涵蓋 週五～週一（3天）</div>
+                    <div class="cycle-flow">週三訂 → 週五到</div>
+                    <div class="cycle-cover">涵蓋 週五～週一</div>
                 </div>
-            </section>
+            </div>
 
             <section class="form-section">
                 <h2 class="section-title">📋 輸入用量資訊</h2>
-                <form id="orderForm" autocomplete="off">
+                <form id="orderForm">
                     <div class="form-group">
-                        <label for="currentStock">目前庫存量</label>
+                        <label>目前庫存量 (箱)</label>
                         <div class="input-wrapper">
-                            <input type="number" id="currentStock" min="0" step="0.1" placeholder="例如：3" required>
+                            <input type="number" id="currentStock" step="0.1" placeholder="例如：3" required>
                             <span class="input-unit">箱</span>
                         </div>
-                        <div class="input-hint">1 箱 = 20 瓶</div>
                     </div>
                     <div class="form-row">
                         <div class="form-group half">
-                            <label for="weekdayUsage">平日用量</label>
+                            <label>平日用量</label>
                             <div class="input-wrapper">
-                                <input type="number" id="weekdayUsage" min="0.1" step="0.1" placeholder="例如：1" required>
+                                <input type="number" id="weekdayUsage" step="0.1" value="1" required>
                                 <span class="input-unit">箱/天</span>
                             </div>
                         </div>
                         <div class="form-group half">
-                            <label for="holidayUsage">假日用量</label>
+                            <label>假日用量</label>
                             <div class="input-wrapper">
-                                <input type="number" id="holidayUsage" min="0" step="0.1" placeholder="例如：1.5" required>
+                                <input type="number" id="holidayUsage" step="0.1" value="1.5" required>
                                 <span class="input-unit">箱/天</span>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="safetyDays">安全庫存天數</label>
+                        <label>安全庫存天數</label>
                         <div class="input-wrapper">
-                            <input type="number" id="safetyDays" min="0" step="0.5" value="1" placeholder="預設 1 天">
+                            <input type="number" id="safetyDays" step="0.5" value="1">
                             <span class="input-unit">天</span>
                         </div>
                     </div>
-                    <button type="submit" class="btn-calculate" id="btnCalc">
-                        <span class="btn-icon">📊</span>
-                        計算建議叫貨量
-                    </button>
+                    <div class="form-group">
+                        <label>🏖️ 連假/特殊活動加叫 (箱)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="milkHolidayExtra" step="1" value="0" placeholder="0">
+                            <span class="input-unit">箱</span>
+                        </div>
+                        <div class="input-hint">遇長假或大活動，建議額外增加 2-5 箱</div>
+                    </div>
+                    <button type="submit" class="btn-calculate">📊 計算建議叫貨量</button>
                 </form>
             </section>
 
-            <section class="results-section" id="resultsSection" style="display:none;">
+            <div class="results-section" id="resultsSection" style="display:none;">
                 <h2 class="section-title">📦 叫貨建議</h2>
-                <div class="timeline" id="timeline"></div>
-                <div class="result-cards" id="resultCards"></div>
+                <div class="result-cards">
+                    <div class="res-card">
+                        <span>建議補貨數量</span>
+                        <span class="res-val" id="resMilk">0</span>
+                    </div>
+                </div>
                 <div class="detail-box" id="detailBox"></div>
-            </section>
-
-            <section class="history-section" id="historySection" style="display:none;">
-                <h2 class="section-title">📜 最近計算紀錄</h2>
-                <div class="history-list" id="historyList"></div>
-                <button class="btn-clear-history" id="btnClearHistory">清除紀錄</button>
-            </section>
+            </div>
         </div>
 
-        <!-- ==================== ICE CREAM TAB ==================== -->
+        <!-- ICE CREAM TAB -->
         <div class="tab-content" id="tab-icecream">
-            <section class="status-banner" id="icStatusBanner">
-                <div class="status-dot"></div>
-                <span id="icStatusText">載入中...</span>
-            </section>
-
-            <section class="cycle-info">
-                <div class="cycle-card full-width">
-                    <div class="cycle-label">冰淇淋叫貨週期</div>
-                    <div class="cycle-flow">
-                        <span class="cycle-day order">第1週五訂</span>
-                        <span class="cycle-arrow">→</span>
-                        <span class="cycle-day deliver">兩週後週三到</span>
-                    </div>
-                    <div class="cycle-flow" style="margin-top:8px;">
-                        <span class="cycle-day order">第3週五訂</span>
-                        <span class="cycle-arrow">→</span>
-                        <span class="cycle-day deliver">兩週後週三到</span>
-                    </div>
-                    <div class="cycle-cover" style="margin-top:8px;">每月固定兩次叫貨，週五訂貨後第 12 天（週三）到貨</div>
+            <div class="cycle-info">
+                <div class="cycle-card">
+                    <div class="cycle-label">本月第一波</div>
+                    <div class="cycle-flow" id="icDateRange1">計算中...</div>
+                    <div class="cycle-cover">每月第 1 個週五</div>
                 </div>
-            </section>
+                <div class="cycle-card">
+                    <div class="cycle-label">本月第二波</div>
+                    <div class="cycle-flow" id="icDateRange2">計算中...</div>
+                    <div class="cycle-cover">每月第 3 個週五</div>
+                </div>
+            </div>
 
-            <section class="form-section ic-form">
-                <h2 class="section-title">🍦 輸入冰淇淋庫存與用量</h2>
-                <form id="icOrderForm" autocomplete="off">
-
-                    <!-- ★ 涵蓋模式選擇 ★ -->
+            <section class="form-section">
+                <h2 class="section-title">🍦 冰淇淋參數設定</h2>
+                <form id="icOrderForm">
                     <div class="form-group">
                         <label>📅 叫貨涵蓋模式</label>
-                        <div class="coverage-mode-group" id="icCoverageModes">
-                            <button type="button" class="coverage-mode-btn" data-mode="one-cycle" id="modeOneCycle">
-                                <span class="mode-icon">🔁</span>
+                        <div class="coverage-mode-group">
+                            <button type="button" class="coverage-mode-btn" data-mode="14">
                                 <span class="mode-title">兩週到貨</span>
-                                <span class="mode-desc">叫一個週期量<br>（約 14 天）</span>
+                                <span class="mode-desc">涵蓋約 14 天</span>
                             </button>
-                            <button type="button" class="coverage-mode-btn active" data-mode="two-cycle"
-                                id="modeTwoCycle">
-                                <span class="mode-icon">📦</span>
+                            <button type="button" class="coverage-mode-btn active" data-mode="40">
                                 <span class="mode-title">整月備貨</span>
-                                <span class="mode-desc">一次叫足兩個週期<br>（約 40 天）</span>
+                                <span class="mode-desc">涵蓋約 40 天</span>
                             </button>
                         </div>
-                        <input type="hidden" id="icCoverageMode" value="two-cycle">
+                        <input type="hidden" id="icCoverageMode" value="40">
                     </div>
 
+                    <!-- 香草粉區塊 -->
                     <div class="product-group">
                         <div class="product-header">
-                            <span class="product-icon">🍨</span>
-                            <span class="product-name">香草粉</span>
-                            <span class="product-spec">1 箱 = 12 包</span>
+                            <span>🍨 香草粉</span>
+                            <span class="product-spec">1箱 = 12包</span>
+                        </div>
+                        <div class="form-group">
+                            <label>目前庫存</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="icVanillaStock" placeholder="目前箱數" step="0.1" required>
+                                <span class="input-unit">箱</span>
+                            </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label for="icVanillaStock">目前庫存</label>
+                                <label>平日用量</label>
                                 <div class="input-wrapper">
-                                    <input type="number" id="icVanillaStock" min="0" step="0.1" placeholder="箱"
-                                        required>
-                                    <span class="input-unit">箱</span>
+                                    <input type="number" id="icVanillaWeekday" placeholder="包數" step="0.1" value="1" required>
+                                    <span class="input-unit">包/天</span>
                                 </div>
                             </div>
                             <div class="form-group half">
-                                <label for="icVanillaWeekday">平日用量</label>
+                                <label>假日用量</label>
                                 <div class="input-wrapper">
-                                    <input type="number" id="icVanillaWeekday" min="0" step="0.5" placeholder="包/天"
-                                        required>
+                                    <input type="number" id="icVanillaHoliday" placeholder="包數" step="0.1" value="2" required>
                                     <span class="input-unit">包/天</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="icVanillaHoliday">假日用量</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="icVanillaHoliday" min="0" step="0.5" placeholder="包/天"
-                                    required>
-                                <span class="input-unit">包/天</span>
-                            </div>
-                        </div>
                     </div>
 
+                    <!-- 保久乳區塊 -->
                     <div class="product-group">
                         <div class="product-header">
-                            <span class="product-icon">🥛</span>
-                            <span class="product-name">保久乳</span>
-                            <span class="product-spec">1 箱 = 12 罐</span>
+                            <span>🥛 保久乳</span>
+                            <span class="product-spec">1箱 = 12罐</span>
+                        </div>
+                        <div class="form-group">
+                            <label>目前庫存</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="icMilkStock" placeholder="目前箱數" step="0.1" required>
+                                <span class="input-unit">箱</span>
+                            </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group half">
-                                <label for="icMilkStock">目前庫存</label>
+                                <label>平日用量</label>
                                 <div class="input-wrapper">
-                                    <input type="number" id="icMilkStock" min="0" step="0.1" placeholder="箱" required>
-                                    <span class="input-unit">箱</span>
-                                </div>
-                            </div>
-                            <div class="form-group half">
-                                <label for="icMilkWeekday">平日用量</label>
-                                <div class="input-wrapper">
-                                    <input type="number" id="icMilkWeekday" min="0" step="0.5" placeholder="罐/天"
-                                        required>
+                                    <input type="number" id="icMilkWeekday" placeholder="罐數" step="0.1" value="1" required>
                                     <span class="input-unit">罐/天</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="icMilkHoliday">假日用量</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="icMilkHoliday" min="0" step="0.5" placeholder="罐/天" required>
-                                <span class="input-unit">罐/天</span>
+                            <div class="form-group half">
+                                <label>假日用量</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="icMilkHoliday" placeholder="罐數" step="0.1" value="2" required>
+                                    <span class="input-unit">罐/天</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>安全庫存</label>
+                        <label>安全庫存設定</label>
                         <div class="safety-presets" id="icSafetyPresets">
                             <button type="button" class="safety-btn" data-days="1">
-                                <span class="safety-icon">🟢</span>
-                                <span class="safety-label">一般</span>
-                                <span class="safety-desc">多備 1 天</span>
+                                <span class="safety-label">一般</span><span class="safety-desc">+1天</span>
                             </button>
                             <button type="button" class="safety-btn active" data-days="2">
-                                <span class="safety-icon">🟡</span>
-                                <span class="safety-label">保守</span>
-                                <span class="safety-desc">多備 2 天</span>
-                            </button>
-                            <button type="button" class="safety-btn" data-days="3">
-                                <span class="safety-icon">🔴</span>
-                                <span class="safety-label">安全</span>
-                                <span class="safety-desc">多備 3 天</span>
+                                <span class="safety-label">保守</span><span class="safety-desc">+2天</span>
                             </button>
                             <button type="button" class="safety-btn" data-days="5">
-                                <span class="safety-icon">🎊</span>
-                                <span class="safety-label">連假</span>
-                                <span class="safety-desc">多備 5 天</span>
+                                <span class="safety-label">連假</span><span class="safety-desc">+5天</span>
                             </button>
                         </div>
                         <input type="hidden" id="icSafetyDays" value="2">
                     </div>
 
-                    <button type="submit" class="btn-calculate ic-btn" id="icBtnCalc">
-                        <span class="btn-icon">📊</span>
-                        計算建議叫貨量
-                    </button>
+                    <button type="submit" class="btn-calculate">📊 計算建議量</button>
                 </form>
             </section>
 
-            <section class="results-section" id="icResultsSection" style="display:none;">
-                <h2 class="section-title">📦 冰淇淋叫貨建議</h2>
-                <div class="ic-schedule-card" id="icScheduleCard"></div>
+            <div class="results-section" id="icResultsSection" style="display:none;">
+                <h2 class="section-title">📦 建議採購箱數</h2>
                 <div class="result-cards" id="icResultCards"></div>
-                <div class="detail-box" id="icDetailBox"></div>
-            </section>
-
-            <section class="history-section" id="icHistorySection" style="display:none;">
-                <h2 class="section-title">📜 上次叫貨紀錄</h2>
-                <div class="history-list" id="icHistoryList"></div>
-                <button class="btn-clear-history" id="icBtnClearHistory">清除紀錄</button>
-            </section>
+            </div>
         </div>
 
-        <!-- ==================== DISCOUNT TAB ==================== -->
+        <!-- DISCOUNT TAB -->
         <div class="tab-content" id="tab-discount">
-
-            <!-- 折扣說明 -->
-            <section class="status-banner disc-banner">
-                <div class="status-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></div>
-                <span>全品項 <strong>8折優惠</strong>｜點擊品項加入計算機，按 + / − 調整數量</span>
+            <section class="status-banner">
+                <div class="status-dot" style="background:#f59e0b;"></div>
+                <span>全品項 <strong>8 折優惠</strong>｜點擊加入</span>
+                <button id="discOpenSettings" style="margin-left:auto; background:none; border:none; color:#f59e0b; cursor:pointer; font-size:1.2rem;">⚙️</button>
             </section>
 
-            <!-- 品項卡片列表 -->
-            <section class="form-section" style="padding-top:12px;">
-                <div class="disc-header-row">
-                    <h2 class="section-title" style="margin-bottom:0;">🍪 品項價目表（8折）</h2>
-                    <button class="disc-setting-btn" id="discOpenSettings" title="新增/管理商品">⚙️ 管理商品</button>
+            <div class="disc-layout">
+                <div class="disc-main">
+                    <div class="disc-product-grid" id="discProductGrid"></div>
                 </div>
-                <div class="disc-product-grid" id="discProductGrid"></div>
-            </section>
-
-            <!-- 計算機結果 -->
-            <section class="disc-cart-section" id="discCartSection" style="display:none;">
-                <h2 class="section-title">🧮 計算機</h2>
-                <div class="disc-cart-list" id="discCartList"></div>
-                <div class="disc-summary" id="discSummary"></div>
-                <button class="btn-clear-history" id="discClearCart" style="margin-top:12px;">清空計算機</button>
-            </section>
-
+                <div class="disc-side">
+                    <section class="disc-cart-section">
+                        <h2 class="section-title" style="font-size:1rem; margin-bottom:12px;">🧮 計算機</h2>
+                        <div class="disc-cart-list" id="discCartList">
+                            <p style="text-align:center; color:var(--text-dim); padding:10px; font-size:0.8rem;">尚無商品</p>
+                        </div>
+                        <div class="disc-summary">
+                            <div class="summary-row">
+                                <span>折價金額</span>
+                                <span id="sumSavings" class="summary-savings">$0</span>
+                            </div>
+                            <div class="summary-total-row">
+                                <span style="font-size:0.75rem; color:var(--text-dim);">8 折實付金額</span>
+                                <div class="summary-total">$<span id="sumDiscount">0</span></div>
+                            </div>
+                            <button class="btn-calculate" id="clearCart" style="background:rgba(255,255,255,0.1); margin-top:12px; color:#fff; font-size:0.8rem; padding:8px;">清空計算機</button>
+                            <div style="font-size:0.7rem; color:var(--text-dim); margin-top:8px; text-align:right;">原價: <span id="sumOriginal">$0</span></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
 
         <footer class="footer">
-            <p>叫貨系統 v2.0</p>
+            <p>叫貨系統 v2.5 © 2024</p>
         </footer>
     </div>
 
-    <!-- ========== 設定 Modal ========== -->
+    <!-- MODAL -->
     <div class="disc-modal-overlay" id="discModalOverlay">
-        <div class="disc-modal" id="discModal">
+        <div class="disc-modal">
             <div class="disc-modal-header">
-                <h3>⚙️ 管理商品</h3>
+                <h3>⚙️ 管理商品列表</h3>
                 <button class="disc-modal-close" id="discModalClose">✕</button>
             </div>
-
-            <!-- 新增商品表單 -->
-            <div class="disc-modal-section">
-                <h4 class="disc-modal-sub">➕ 新增商品</h4>
-                <div class="disc-add-form">
-                    <div class="disc-add-row">
-                        <div class="disc-add-field">
-                            <label for="newProdIcon">圖示（表情符號）</label>
-                            <input type="text" id="newProdIcon" maxlength="4" placeholder="🍰" class="disc-add-input disc-add-icon">
-                        </div>
-                        <div class="disc-add-field" style="flex:2;">
-                            <label for="newProdName">商品名稱</label>
-                            <input type="text" id="newProdName" placeholder="例如：起司蛋糕" class="disc-add-input">
-                        </div>
-                        <div class="disc-add-field">
-                            <label for="newProdPrice">原價（元）</label>
-                            <input type="number" id="newProdPrice" min="1" step="1" placeholder="100" class="disc-add-input disc-add-price">
-                        </div>
-                    </div>
-                    <button class="disc-add-btn" id="discAddProduct">＋ 加入商品列表</button>
-                </div>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="newProdName" placeholder="新商品名稱" class="disc-add-input">
+                <input type="number" id="newProdPrice" placeholder="原價 (元)" class="disc-add-input">
+                <button class="disc-add-btn" id="discAddProduct">＋ 新增至清單</button>
             </div>
-
-            <!-- 自訂商品列表 -->
-            <div class="disc-modal-section">
-                <h4 class="disc-modal-sub">📋 自訂商品列表</h4>
-                <div class="disc-custom-list" id="discCustomList">
-                    <p class="disc-empty-hint">尚未新增任何自訂商品</p>
-                </div>
-            </div>
-
-            <div class="disc-modal-footer">
-                <p class="disc-modal-note">💡 預設 16 個品項無法刪除，自訂商品可個別刪除</p>
+            <div style="border-top: 1px solid var(--border); padding-top:15px;">
+                <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-dim);">目前所有品項：</h4>
+                <div class="disc-custom-list" id="discCustomList"></div>
             </div>
         </div>
     </div>
 
-    <script type="module" src="app.js"></script>
-    <script type="module" src="ice-cream.js"></script>
-</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const weekDay = today.getDay(); 
+            const todayStr = today.toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+            document.getElementById('todayLabel').innerText = todayStr;
 
+            // --- 自動計算牛奶下次叫貨日 ---
+            const getDaysUntilNextOrder = (currentDay) => {
+                if (currentDay === 1 || currentDay === 3) return 0;
+                if (currentDay === 0) return 1; 
+                if (currentDay === 2) return 1; 
+                if (currentDay === 4) return 4; 
+                if (currentDay === 5) return 3; 
+                if (currentDay === 6) return 2; 
+                return -1;
+            };
+            const daysLeft = getDaysUntilNextOrder(weekDay);
+            const statusEl = document.getElementById('statusText');
+            if (daysLeft === 0) {
+                statusEl.innerText = '今日即為叫貨日！';
+                statusEl.style.color = '#7dc8ff';
+                statusEl.style.fontWeight = 'bold';
+            } else {
+                statusEl.innerText = `距離下次叫貨還有 ${daysLeft} 天`;
+            }
+
+            // --- 自動計算冰淇淋叫貨週期 ---
+            const getFridayOfNthWeek = (year, month, n) => {
+                const firstDay = new Date(year, month, 1);
+                let dayOffset = (5 - firstDay.getDay() + 7) % 7;
+                return new Date(year, month, 1 + dayOffset + (n - 1) * 7);
+            };
+
+            const formatDate = (date) => `${date.getMonth() + 1}/${date.getDate()}`;
+
+            const updateICCycles = () => {
+                const year = today.getFullYear();
+                const month = today.getMonth();
+                
+                // 計算本月的第一與第三個週五
+                const firstFri = getFridayOfNthWeek(year, month, 1);
+                const thirdFri = getFridayOfNthWeek(year, month, 3);
+                
+                // 到貨日 = 訂貨日 + 12 天
+                const arrival1 = new Date(firstFri); arrival1.setDate(firstFri.getDate() + 12);
+                const arrival2 = new Date(thirdFri); arrival2.setDate(thirdFri.getDate() + 12);
+
+                document.getElementById('icDateRange1').innerText = `${formatDate(firstFri)} 訂貨 → ${formatDate(arrival1)} 到貨`;
+                document.getElementById('icDateRange2').innerText = `${formatDate(thirdFri)} 訂貨 → ${formatDate(arrival2)} 到貨`;
+            };
+            updateICCycles();
+
+            // 1. 分頁切換
+            const tabs = document.querySelectorAll('.tab-card');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.tab;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`tab-${target}`).classList.add('active');
+                });
+            });
+
+            // 2. 牛奶計算
+            const milkForm = document.getElementById('orderForm');
+            milkForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const stock = parseFloat(document.getElementById('currentStock').value) || 0;
+                const weekU = parseFloat(document.getElementById('weekdayUsage').value) || 0;
+                const holU = parseFloat(document.getElementById('holidayUsage').value) || 0;
+                const safety = parseFloat(document.getElementById('safetyDays').value) || 0;
+                const hExtra = parseFloat(document.getElementById('milkHolidayExtra').value) || 0;
+                let daysToCover = (weekDay === 1 || weekDay === 2) ? 3 : 4;
+                let targetUsage = (daysToCover === 3) ? (weekU * 3) : (weekU * 2 + holU * 2);
+                let needed = targetUsage + (weekU * safety) + hExtra;
+                let result = Math.max(0, Math.ceil(needed - stock));
+                document.getElementById('resMilk').innerText = result + ' 箱';
+                document.getElementById('detailBox').innerHTML = `今日為週 ${'日一二三四五六'[weekDay]}，涵蓋未來 ${daysToCover} 天量。<br>基準: ${targetUsage.toFixed(1)} 箱 | 安庫: ${(weekU * safety).toFixed(1)} 箱${hExtra > 0 ? ` | 加叫: ${hExtra} 箱` : ''}`;
+                document.getElementById('resultsSection').style.display = 'block';
+            });
+
+            // 3. 冰淇淋計算
+            const icForm = document.getElementById('icOrderForm');
+            const icModeBtns = document.querySelectorAll('.coverage-mode-btn');
+            const icSafetyBtns = document.querySelectorAll('.safety-btn');
+            icModeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    icModeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('icCoverageMode').value = btn.dataset.mode;
+                });
+            });
+            icSafetyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    icSafetyBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('icSafetyDays').value = btn.dataset.days;
+                });
+            });
+            icForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const modeDays = parseInt(document.getElementById('icCoverageMode').value);
+                const safetyDays = parseInt(document.getElementById('icSafetyDays').value);
+                const holidays = Math.floor(modeDays / 7) * 2 + (modeDays % 7 >= 6 ? 1 : 0);
+                const weekdays = modeDays - holidays;
+
+                // 香草粉
+                const vStock = parseFloat(document.getElementById('icVanillaStock').value) || 0;
+                const vWeek = parseFloat(document.getElementById('icVanillaWeekday').value) || 0;
+                const vHol = parseFloat(document.getElementById('icVanillaHoliday').value) || 0;
+                const vTotalUsage = (vWeek * weekdays) + (vHol * holidays) + (vWeek * safetyDays);
+
+                // 保久乳
+                const mStock = parseFloat(document.getElementById('icMilkStock').value) || 0;
+                const mWeek = parseFloat(document.getElementById('icMilkWeekday').value) || 0;
+                const mHol = parseFloat(document.getElementById('icMilkHoliday').value) || 0;
+                const mTotalUsage = (mWeek * weekdays) + (mHol * holidays) + (mWeek * safetyDays);
+
+                const vNeed = Math.max(0, Math.ceil((vTotalUsage / 12) - vStock));
+                const mNeed = Math.max(0, Math.ceil((mTotalUsage / 12) - mStock));
+                document.getElementById('icResultCards').innerHTML = `<div class="res-card"><span>香草粉</span><span class="res-val">${vNeed} 箱</span></div><div class="res-card"><span>保久乳</span><span class="res-val">${mNeed} 箱</span></div>`;
+                document.getElementById('icResultsSection').style.display = 'block';
+            });
+
+            // 4. 折扣計算
+            let defaultProducts = [
+                { name: '鳳凰酥', price: 32 }, { name: '金鑽鳳梨酥', price: 45 }, { name: '金元寶米菓', price: 30 },
+                { name: '起司卡滋棒', price: 130 }, { name: '卡滋小帕芙', price: 60 }, { name: '香蒜奶油餅乾', price: 65 },
+                { name: '香草杏仁奇普', price: 110 }, { name: '巧克力杏仁奇普', price: 120 }, { name: '香草巧克力餅乾', price: 140 },
+                { name: '海苔薄餅', price: 135 }, { name: '法式香草餅乾', price: 100 }, { name: '咖啡酥', price: 110 },
+                { name: '厚味牛奶棒', price: 120 }, { name: '蜜香夏威夷豆塔', price: 50 }, { name: '杏仁瓦片', price: 40 },
+                { name: '日式焦糖布蕾餅', price: 38 }, { name: '琉金酥餅', price: 45 }, { name: 'QQ布朗尼', price: 35 }
+            ];
+            let products = JSON.parse(localStorage.getItem('order_products_v2')) || defaultProducts;
+            let cart = [];
+            const renderProducts = () => {
+                const grid = document.getElementById('discProductGrid');
+                const customList = document.getElementById('discCustomList');
+                if(!grid || !customList) return;
+                grid.innerHTML = ''; customList.innerHTML = '';
+                products.forEach((p, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'disc-item'; div.innerHTML = `<span class="disc-item-name">${p.name}</span><span class="disc-item-price">$${p.price}</span>`;
+                    div.onclick = () => addToCart(p); grid.appendChild(div);
+                    const mDiv = document.createElement('div');
+                    mDiv.className = 'custom-item'; mDiv.innerHTML = `<span>${p.name} ($${p.price})</span><span class="del-btn" onclick="deleteProduct(${idx})">刪除</span>`;
+                    customList.appendChild(mDiv);
+                });
+                localStorage.setItem('order_products_v2', JSON.stringify(products));
+            };
+            const addToCart = (product) => {
+                const exist = cart.find(item => item.name === product.name);
+                if (exist) exist.qty++; else cart.push({ ...product, qty: 1 });
+                renderCart();
+            };
+            window.updateQty = (name, delta) => {
+                const item = cart.find(i => i.name === name);
+                if (item) {
+                    item.qty += delta;
+                    if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+                }
+                renderCart();
+            };
+            const renderCart = () => {
+                const list = document.getElementById('discCartList');
+                if (cart.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:10px; font-size:0.8rem;">尚無商品</p>';
+                    document.getElementById('sumOriginal').innerText = '$0'; document.getElementById('sumSavings').innerText = '$0'; document.getElementById('sumDiscount').innerText = '0';
+                    return;
+                }
+                list.innerHTML = ''; let total = 0;
+                cart.forEach(item => {
+                    total += item.price * item.qty;
+                    const row = document.createElement('div'); row.className = 'cart-row';
+                    row.innerHTML = `<span class="cart-item-name">${item.name}</span><div class="cart-qty-controls"><button class="qty-btn" onclick="updateQty('${item.name}', -1)">-</button><span style="font-size:0.8rem;">${item.qty}</span><button class="qty-btn" onclick="updateQty('${item.name}', 1)">+</button></div>`;
+                    list.appendChild(row);
+                });
+                const discountedTotal = Math.round(total * 0.8); const savings = total - discountedTotal;
+                document.getElementById('sumOriginal').innerText = '$' + total.toLocaleString(); document.getElementById('sumSavings').innerText = '$' + savings.toLocaleString(); document.getElementById('sumDiscount').innerText = discountedTotal.toLocaleString();
+            };
+            document.getElementById('discOpenSettings').onclick = () => document.getElementById('discModalOverlay').style.display = 'flex';
+            document.getElementById('discModalClose').onclick = () => document.getElementById('discModalOverlay').style.display = 'none';
+            document.getElementById('clearCart').onclick = () => { cart = []; renderCart(); };
+            document.getElementById('discAddProduct').onclick = () => {
+                const name = document.getElementById('newProdName').value; const price = parseInt(document.getElementById('newProdPrice').value);
+                if (name && price) { products.push({ name, price }); renderProducts(); document.getElementById('newProdName').value = ''; document.getElementById('newProdPrice').value = ''; }
+            };
+            window.deleteProduct = (idx) => { products.splice(idx, 1); renderProducts(); };
+            renderProducts();
+        });
+    </script>
+</body>
 </html>
